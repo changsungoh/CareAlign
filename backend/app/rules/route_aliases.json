@@ -1,0 +1,9 @@
+{
+  "oral": ["oral", "by mouth", "po", "p.o."],
+  "sublingual": ["sublingual", "sl", "under the tongue"],
+  "topical": ["topical", "apply to skin"],
+  "inhaled": ["inhaled", "inhalation"],
+  "intramuscular": ["intramuscular", "im"],
+  "intravenous": ["intravenous", "iv"],
+  "subcutaneous": ["subcutaneous", "sc", "sq"]
+}

@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from datetime import date, datetime
 from decimal import Decimal, InvalidOperation
 from enum import StrEnum
@@ -14,6 +16,21 @@ class ValidationStatus(StrEnum):
     NEEDS_REVIEW = "needs_review"
     INSUFFICIENT_INFORMATION = "insufficient_information"
     INVALID_OUTPUT = "invalid_output"
+
+
+class AnalysisStatus(StrEnum):
+    COMPLETED = "completed"
+    NEEDS_REVIEW = "needs_review"
+    INSUFFICIENT_INFORMATION = "insufficient_information"
+
+
+class ConflictType(StrEnum):
+    DOSE = "dose_difference"
+    FREQUENCY = "frequency_difference"
+    ROUTE = "route_difference"
+    ACTION = "action_difference"
+    OMISSION = "possible_omission"
+    IDENTITY = "identity_uncertain"
 
 
 class PatternType(StrEnum):
@@ -74,6 +91,8 @@ class Route(StrictModel):
 
 
 class Instruction(StrictModel):
+    instruction_id: str = Field(pattern=r"^[A-Za-z0-9_-]{1,64}$")
+    document_id: str = Field(pattern=r"^[A-Za-z0-9_-]{1,64}$")
     medication: MedicationIdentity
     dose: Dose | None = None
     frequency: Frequency | None = None
@@ -86,6 +105,63 @@ class Instruction(StrictModel):
     evidence_start: int | None = Field(default=None, ge=0)
     evidence_end: int | None = Field(default=None, ge=0)
     validation_status: ValidationStatus = ValidationStatus.NEEDS_REVIEW
+
+
+class Conflict(StrictModel):
+    conflict_id: str = Field(pattern=r"^[A-Za-z0-9_-]{1,64}$")
+    conflict_type: ConflictType
+    medication_name: str
+    instruction_ids: list[str] = Field(min_length=1)
+    document_ids: list[str] = Field(min_length=1)
+    summary: str
+    clarification_question: str
+    status: ValidationStatus
+    confidence: float = Field(ge=0, le=1)
+    evidence_spans: list[str] = Field(min_length=1)
+
+
+class AnalyzeRequest(StrictModel):
+    documents: list[CareDocument] = Field(min_length=2, max_length=5)
+
+
+class AnalyzeResponse(StrictModel):
+    case_id: str
+    status: AnalysisStatus
+    documents: list[CareDocument]
+    instructions: list[Instruction]
+    conflicts: list[Conflict]
+    safety_message: str
+    metadata: AnalysisMetadata
+    demo_mode: bool = False
+
+
+class ChecklistItem(StrictModel):
+    item_id: str
+    instruction_id: str
+    category: str
+    expected_value: str
+    source_evidence: str
+
+
+class TeachBackRequest(StrictModel):
+    instructions: list[Instruction] = Field(min_length=1)
+    excluded_instruction_ids: list[str] = Field(default_factory=list)
+    patient_response: str = Field(min_length=1, max_length=2000)
+
+
+class TeachBackFinding(StrictModel):
+    item_id: str
+    category: str
+    result: str
+    explanation: str
+
+
+class TeachBackResponse(StrictModel):
+    checklist: list[ChecklistItem]
+    findings: list[TeachBackFinding]
+    message: str
+    needs_human_review: bool
+    metadata: AnalysisMetadata
 
 
 class CareDocument(StrictModel):

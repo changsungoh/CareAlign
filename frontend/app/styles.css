@@ -27,9 +27,14 @@ body {
 }
 
 button,
-a {
+a,
+input,
+textarea {
   font: inherit;
 }
+
+button { cursor: pointer; }
+button:disabled { cursor: not-allowed; opacity: .55; }
 
 button:focus-visible,
 a:focus-visible {
@@ -39,6 +44,8 @@ a:focus-visible {
 
 .nav,
 .hero,
+.workspace,
+.results,
 .principles,
 footer {
   width: min(1120px, calc(100% - 40px));
@@ -68,6 +75,9 @@ footer {
   font-weight: 700;
   padding: 8px 12px;
 }
+.nav-actions, .section-heading, .result-actions, .conflict-top { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.quiet { border: 1px solid var(--line); border-radius: 9px; background: #fff; color: var(--ink); padding: 9px 13px; }
+.large-text { font-size: 1.22rem; }
 
 .hero {
   padding-block: 88px 64px;
@@ -139,6 +149,34 @@ h1 {
   border-top: 1px solid var(--line);
 }
 
+.workspace, .results { padding-block: 64px; border-top: 1px solid var(--line); }
+.workspace h2, .results h2, .teachback h2 { margin: 8px 0 18px; font-size: clamp(2rem, 4vw, 3rem); }
+.privacy-banner, .safety-line { border-left: 5px solid var(--warning-line); background: var(--warning); padding: 16px 18px; line-height: 1.55; }
+.document-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin: 26px 0; }
+.document-card, .conflict-card, .teachback, .empty { border: 1px solid var(--line); border-radius: 16px; background: #fff; padding: 24px; }
+.document-card label, .conflict-card label { display: grid; gap: 7px; margin-top: 16px; font-weight: 700; }
+input, textarea { width: 100%; border: 1px solid #9bb7a7; border-radius: 8px; padding: 12px; background: #fff; color: var(--ink); line-height: 1.45; }
+textarea { resize: vertical; }
+.step, .conflict-type, .demo-badge { display: inline-flex; border-radius: 999px; padding: 6px 10px; background: var(--green-soft); color: var(--green); font-size: .78rem; font-weight: 800; text-transform: uppercase; letter-spacing: .04em; }
+.consent { display: flex; align-items: flex-start; gap: 10px; margin: 24px 0; line-height: 1.5; }
+.consent input { width: 20px; height: 20px; flex: 0 0 auto; }
+.primary, .conflict-card button, .result-actions button { border: 0; border-radius: 9px; padding: 12px 17px; background: var(--green); color: white; font-weight: 800; }
+.error { margin-top: 20px; padding: 15px; border: 1px solid #bd2c2c; border-radius: 8px; background: #fff0f0; color: #7c1515; }
+.result-actions { justify-content: flex-start; margin: 24px 0; }
+.result-actions button { background: #fff; color: var(--green); border: 1px solid var(--green); }
+.result-actions .primary { background: var(--green); color: #fff; }
+.conflict-card { margin-top: 18px; box-shadow: 0 9px 30px rgba(23, 104, 63, .08); }
+.conflict-top { color: var(--muted); font-size: .85rem; }
+.conflict-card h3 { margin: 18px 0 6px; font-size: 1.7rem; }
+blockquote { display: grid; gap: 8px; margin: 20px 0; padding: 16px; border-left: 4px solid var(--green); background: var(--green-soft); }
+.question { margin: 20px 0; padding: 18px; border-radius: 12px; background: var(--ink); color: white; }
+.question p { margin-bottom: 0; font-size: 1.08rem; }
+.unverified { color: #934d00; font-size: .75rem; }
+.saved, .teach-result { padding: 12px; border-radius: 8px; background: var(--green-soft); color: var(--green); font-weight: 700; }
+.teachback { margin-top: 44px; background: #f5f8ff; border-color: #cdd8ee; }
+.danger-link { margin-top: 24px; border: 0; background: transparent; color: #9a1b1b; text-decoration: underline; }
+.metadata { color: var(--muted); font-size: .78rem; }
+
 .principles h2 {
   font-size: clamp(2rem, 4vw, 3.2rem);
 }
@@ -184,6 +222,9 @@ footer {
     grid-template-columns: 1fr;
   }
 
+  .document-grid { grid-template-columns: 1fr; }
+  .section-heading, .nav-actions { align-items: flex-start; flex-direction: column; }
+
   .actions {
     align-items: flex-start;
     flex-direction: column;
@@ -198,11 +239,19 @@ footer {
 
 @media print {
   .nav,
-  .actions {
+  .hero,
+  .workspace,
+  .actions,
+  .result-actions,
+  .teachback,
+  .danger-link {
     display: none;
   }
 
   body {
     background: #fff;
   }
+
+  .results { border: 0; padding: 0; }
+  .conflict-card { break-inside: avoid; box-shadow: none; }
 }

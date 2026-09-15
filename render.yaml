@@ -1,0 +1,16 @@
+services:
+  - type: web
+    name: carealign-api
+    runtime: docker
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    healthCheckPath: /api/health
+    envVars:
+      - key: APP_ENV
+        value: production
+      - key: DEBUG_LOG_RAW
+        value: "false"
+      - key: DEMO_MODE
+        value: "true"
+      - key: ALLOWED_ORIGINS
+        sync: false

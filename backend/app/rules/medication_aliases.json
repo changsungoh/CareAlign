@@ -1,0 +1,12 @@
+{
+  "acetaminophen": {"aliases": ["acetaminophen", "paracetamol", "tylenol"], "ingredient": "acetaminophen"},
+  "atorvastatin": {"aliases": ["atorvastatin", "lipitor"], "ingredient": "atorvastatin"},
+  "lisinopril": {"aliases": ["lisinopril", "zestril", "prinivil"], "ingredient": "lisinopril"},
+  "metformin": {"aliases": ["metformin", "glucophage"], "ingredient": "metformin"},
+  "metoprolol_tartrate_ir": {"aliases": ["metoprolol tartrate", "lopressor"], "ingredient": "metoprolol", "salt": "tartrate", "form": "IR"},
+  "metoprolol_succinate_er": {"aliases": ["metoprolol succinate", "toprol-xl", "toprol xl"], "ingredient": "metoprolol", "salt": "succinate", "form": "ER"},
+  "amlodipine": {"aliases": ["amlodipine", "norvasc"], "ingredient": "amlodipine"},
+  "losartan": {"aliases": ["losartan", "cozaar"], "ingredient": "losartan"},
+  "gabapentin": {"aliases": ["gabapentin", "neurontin"], "ingredient": "gabapentin"},
+  "omeprazole": {"aliases": ["omeprazole", "prilosec"], "ingredient": "omeprazole"}
+}

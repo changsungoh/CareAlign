@@ -13,9 +13,13 @@ class Settings(BaseSettings):
     demo_mode: bool = False
     max_document_chars: int = 4000
     rate_limit_per_minute: int = 10
-    prompt_version: str = "normalization-v0"
-    rules_version: str = "conflict-rules-v0"
-    dataset_version: str = "synthetic-eval-v0"
+    prompt_version: str = "normalization-v1"
+    rules_version: str = "conflict-rules-v1"
+    dataset_version: str = "synthetic-eval-v1"
+    anthropic_api_key: str = ""
+    llm_model: str = "claude-3-5-haiku-latest"
+    daily_request_limit: int = 250
+    confidence_threshold: float = 0.70
 
     @cached_property
     def allowed_origin_list(self) -> list[str]:
