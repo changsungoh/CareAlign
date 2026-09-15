@@ -110,8 +110,10 @@ is used only where wording differs; the safety decision remains inspectable rule
 `evaluation/cases/synthetic-v1.jsonl` contains exactly 90 synthetic cases split into conflict
 detection (43), unsupported-pattern containment (5), teach-back (22), prompt-injection/security
 (15), and resilience (5). `evaluation/evaluate.py` verifies this contract. Release thresholds are
-defined in [evaluation/RELEASE_GATES.md](evaluation/RELEASE_GATES.md); the evaluation is engineering
-evidence, not clinical validation.
+defined in [evaluation/RELEASE_GATES.md](evaluation/RELEASE_GATES.md). The latest deterministic
+synthetic run is published in
+[evaluation/results/synthetic-v1.json](evaluation/results/synthetic-v1.json); it is engineering
+evidence, not clinical validation or an independently reviewed clinical benchmark.
 
 ## Safety and limitations
 
