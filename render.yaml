@@ -13,6 +13,8 @@ services:
       - key: DEBUG_LOG_RAW
         value: "false"
       - key: DEMO_MODE
-        value: "true"
+        value: "false"
+      - key: LLM_MODEL
+        value: claude-haiku-4-5-20251001
       - key: ALLOWED_ORIGINS
         sync: false
