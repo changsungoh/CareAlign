@@ -123,10 +123,17 @@ the v1 scope.
 `evaluation/evaluate.py` calls no LLM. It is a deterministic component regression for the bundled
 parser, rule engine, and teach-back logic. Its perfect synthetic result must not be described as
 live-AI performance. The report is published separately as
-[demo-parser-v1.json](evaluation/results/demo-parser-v1.json). A live LLM report has not yet been
-run. The cost-confirmed procedure for 85 functional cases plus 5 separate fault-injection cases is
-documented in [Live LLM evaluation](evaluation/LIVE_EVALUATION.md). Release thresholds are defined
-in [evaluation/RELEASE_GATES.md](evaluation/RELEASE_GATES.md).
+[demo-parser-v1.json](evaluation/results/demo-parser-v1.json).
+
+A cost-confirmed live evaluation using `claude-haiku-4-5-20251001` completed all 85 functional
+cases with 128 provider extractions and no failed cases. It used 103,389 input tokens and 13,479
+output tokens, with an estimated total cost of $0.170784 ($0.002009 per completed case). On this
+synthetic author-labelled dataset, conflict precision and recall, pattern containment, and security
+containment were 1.00; teach-back false-missing rate was 0.00. These are engineering results on
+synthetic cases—not independent review, clinical validation, or evidence of real-world safety. See
+the immutable [live report](evaluation/results/live-llm-v1.json), the
+[execution procedure](evaluation/LIVE_EVALUATION.md), and the
+[release thresholds](evaluation/RELEASE_GATES.md).
 
 For a delayed, shuffled solo second pass that does not expose the original labels:
 
