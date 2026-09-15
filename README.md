@@ -27,7 +27,7 @@ The repository now contains the end-to-end hackathon MVP:
 - deterministic teach-back checklists that exclude unresolved instructions;
 - a visibly labelled synthetic Demo Mode—never an invisible AI fallback;
 - rate limits, daily budget guard, safe failure states, accessibility controls;
-- 90 versioned synthetic evaluation cases, 25 backend tests and Playwright E2E.
+- 90 versioned synthetic evaluation cases, 29 backend tests and Playwright E2E.
 
 ## Privacy boundary
 

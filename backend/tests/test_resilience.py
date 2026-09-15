@@ -40,3 +40,13 @@ def test_missing_extraction_is_insufficient_not_reassuring(monkeypatch) -> None:
     assert response.status_code == 200
     assert response.json()["status"] == "insufficient_information"
     assert response.json()["conflicts"] == []
+
+
+def test_unsupported_schedule_is_insufficient_not_completed(monkeypatch) -> None:
+    monkeypatch.setattr(settings, "demo_mode", True)
+    payload = {"documents": [dict(item) for item in DOCUMENTS["documents"]]}
+    payload["documents"][0]["raw_text"] = "Continue lisinopril 10 mg as needed."
+    payload["documents"][1]["raw_text"] = "Continue lisinopril 10 mg as needed."
+    response = client.post("/api/analyze", json=payload)
+    assert response.status_code == 200
+    assert response.json()["status"] == "insufficient_information"

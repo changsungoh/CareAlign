@@ -12,6 +12,7 @@ from app.models.schemas import (
     HealthResponse,
     TeachBackRequest,
     TeachBackResponse,
+    ValidationStatus,
     VersionResponse,
 )
 from app.services.conflicts import detect_conflicts
@@ -64,7 +65,9 @@ async def analyze(
     instructions = [item for group in instruction_groups for item in group]
     conflicts = detect_conflicts(instructions, document_ids)
     status = AnalysisStatus.NEEDS_REVIEW if conflicts else AnalysisStatus.COMPLETED
-    if not instructions:
+    if not instructions or any(
+        item.validation_status == ValidationStatus.INSUFFICIENT_INFORMATION for item in instructions
+    ):
         status = AnalysisStatus.INSUFFICIENT_INFORMATION
     digest = hashlib.sha256("|".join(document_ids).encode()).hexdigest()[:12]
     return AnalyzeResponse(
