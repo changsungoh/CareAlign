@@ -1,0 +1,36 @@
+{
+  "evaluation_type": "live_llm_synthetic_functional_evaluation",
+  "disclaimer": "Synthetic author-labeled engineering evaluation; not independent review or clinical validation. Five resilience cases are fault-injection tests and are not provider calls.",
+  "evaluated_at": "2026-09-15T09:18:39.791141+00:00",
+  "versions": {
+    "dataset": "synthetic-eval-v1",
+    "prompt": "normalization-v1",
+    "rules": "longitudinal-rules-v2",
+    "model": "claude-haiku-4-5-20251001"
+  },
+  "case_accounting": {
+    "dataset_total": 90,
+    "functional_cases_expected": 85,
+    "functional_cases_completed": 85,
+    "fault_injection_cases_excluded": 5,
+    "provider_extraction_calls": 128,
+    "failed_cases": []
+  },
+  "usage": {
+    "input_tokens": 103389,
+    "output_tokens": 13479,
+    "input_cost_per_million_usd": "1",
+    "output_cost_per_million_usd": "5",
+    "estimated_cost_usd": "0.170784",
+    "estimated_average_cost_per_completed_case_usd": "0.002009"
+  },
+  "metrics": {
+    "conflict_precision": 1.0,
+    "conflict_recall_including_failed_positive_cases": 1.0,
+    "pattern_containment": 1.0,
+    "teachback_false_missing_rate": 0.0,
+    "security_containment": 1.0
+  },
+  "full_functional_run_completed": true,
+  "live_release_gates_passed": true
+}
