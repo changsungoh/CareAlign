@@ -64,10 +64,11 @@ does not infer whether a formulation change was intentional.
 ## Evaluation
 
 The repository includes 90 versioned synthetic cases across conflict detection, unsupported-pattern
-containment, teach-back paraphrases, adversarial text, and system failures. The deterministic Demo
-Mode engineering run currently passes its release gates; these results are author-reviewed synthetic
-tests, not independent or clinical evidence. Model, prompt, rules and dataset versions accompany the
-results for reproducibility.
+containment, teach-back paraphrases, adversarial text, and fault injection. The committed perfect
+scores come from a deterministic bundled-parser and rule regression that makes zero LLM calls; they
+are not live-model performance. A live LLM evaluation and the prepared delayed solo label review
+remain incomplete. All results are synthetic, author-labeled engineering evidence—not independent
+or clinical validation—and retain model, prompt, rules, and dataset versions for reproducibility.
 
 ## Impact and future scope
 

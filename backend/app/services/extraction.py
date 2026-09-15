@@ -1,5 +1,6 @@
 import json
 import re
+from collections.abc import Callable
 from itertools import count
 
 import httpx
@@ -85,7 +86,10 @@ EXTRACTION_SCHEMA = {
 }
 
 
-async def _call_anthropic(document: CareDocument) -> list[dict]:
+async def _call_anthropic(
+    document: CareDocument,
+    usage_callback: Callable[[dict], None] | None = None,
+) -> list[dict]:
     if not settings.anthropic_api_key:
         raise RuntimeError("Live AI is unavailable because ANTHROPIC_API_KEY is not configured.")
     payload = {
@@ -107,6 +111,8 @@ async def _call_anthropic(document: CareDocument) -> list[dict]:
         )
         response.raise_for_status()
     body = response.json()
+    if usage_callback is not None:
+        usage_callback(body.get("usage", {}))
     if body.get("stop_reason") in {"refusal", "max_tokens"}:
         raise RuntimeError(f"Structured extraction stopped: {body['stop_reason']}")
     text = body["content"][0]["text"].strip()
@@ -188,8 +194,14 @@ def _demo_extract(document: CareDocument) -> list[dict]:
     return results
 
 
-async def extract_document(document: CareDocument, demo_mode: bool) -> list[Instruction]:
-    raw_items = _demo_extract(document) if demo_mode else await _call_anthropic(document)
+async def extract_document(
+    document: CareDocument,
+    demo_mode: bool,
+    usage_callback: Callable[[dict], None] | None = None,
+) -> list[Instruction]:
+    raw_items = (
+        _demo_extract(document) if demo_mode else await _call_anthropic(document, usage_callback)
+    )
     output: list[Instruction] = []
     for index, item in zip(count(1), raw_items, strict=False):
         evidence = str(item.get("evidence_span", ""))

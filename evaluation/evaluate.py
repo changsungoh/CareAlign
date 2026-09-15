@@ -1,4 +1,6 @@
-"""Execute deterministic synthetic release gates; this is not clinical validation."""
+"""Execute deterministic parser/rule regression gates; no LLM is called."""
+
+# ruff: noqa: E402
 
 import asyncio
 import json
@@ -17,7 +19,7 @@ from app.services.extraction import extract_document
 from app.services.teachback import evaluate_teachback
 
 DATASET = Path(__file__).parent / "cases" / "synthetic-v1.jsonl"
-RESULTS = Path(__file__).parent / "results" / "synthetic-v1.json"
+RESULTS = Path(__file__).parent / "results" / "demo-parser-v1.json"
 EXPECTED_GROUPS = {
     "conflict_detection": 43,
     "pattern_containment": 5,
@@ -39,20 +41,18 @@ async def evaluate() -> dict:
     settings.demo_mode = True
     tp = fp = fn = 0
     pattern_safe = security_safe = teachback_false_missing = 0
+    conflict_breakdown: Counter[str] = Counter()
     for case in cases:
         group = case["metric_group"]
         if group == "conflict_detection":
             documents = [as_document(item) for item in case["documents"]]
-            instructions = [
-                item for doc in documents for item in await extract_document(doc, True)
-            ]
+            instructions = [item for doc in documents for item in await extract_document(doc, True)]
             predicted = {
                 item.conflict_type.value
-                for item in detect_conflicts(
-                    instructions, [doc.document_id for doc in documents]
-                )
+                for item in detect_conflicts(instructions, [doc.document_id for doc in documents])
             }
             expected = set(case["expected_conflicts"])
+            conflict_breakdown.update(expected or {"no_expected_conflict"})
             tp += len(predicted & expected)
             fp += len(predicted - expected)
             fn += len(expected - predicted)
@@ -67,8 +67,7 @@ async def evaluate() -> dict:
             pattern_safe += int(
                 bool(extracted)
                 and all(
-                    item.validation_status.value == "insufficient_information"
-                    for item in extracted
+                    item.validation_status.value == "insufficient_information" for item in extracted
                 )
             )
         elif group == "security":
@@ -94,7 +93,11 @@ async def evaluate() -> dict:
     precision = tp / (tp + fp) if tp + fp else 1.0
     recall = tp / (tp + fn) if tp + fn else 1.0
     report = {
-        "disclaimer": "Synthetic engineering evaluation only; not clinical validation.",
+        "evaluation_type": "deterministic_component_regression",
+        "disclaimer": (
+            "No LLM was called. These synthetic parser/rule regression metrics are not live-AI "
+            "performance, independent review, or clinical validation."
+        ),
         "versions": {
             "dataset": settings.dataset_version,
             "prompt": settings.prompt_version,
@@ -102,18 +105,28 @@ async def evaluate() -> dict:
             "model": "transparent-demo-parser",
         },
         "cases": len(cases),
-        "metric_groups": dict(counts),
-        "metrics": {
-            "conflict_precision": round(precision, 4),
-            "conflict_recall": round(recall, 4),
-            "pattern_containment": pattern_safe
-            / EXPECTED_GROUPS["pattern_containment"],
-            "teachback_false_missing_rate": teachback_false_missing
-            / EXPECTED_GROUPS["teachback"],
-            "security_containment": security_safe / EXPECTED_GROUPS["security"],
-            "demo_api_cost_usd": 0,
+        "executed_cases": 85,
+        "fault_injection_cases": {
+            "count": 5,
+            "status": "covered_by_backend_unit_tests_not_executed_by_this_script",
         },
-        "release_gates_passed": precision >= 0.85
+        "metric_groups": dict(counts),
+        "conflict_case_breakdown": dict(sorted(conflict_breakdown.items())),
+        "metrics": {
+            "deterministic_conflict_precision": round(precision, 4),
+            "deterministic_conflict_recall": round(recall, 4),
+            "deterministic_pattern_containment": pattern_safe
+            / EXPECTED_GROUPS["pattern_containment"],
+            "deterministic_teachback_false_missing_rate": teachback_false_missing
+            / EXPECTED_GROUPS["teachback"],
+            "deterministic_security_containment": security_safe / EXPECTED_GROUPS["security"],
+            "llm_calls": 0,
+        },
+        "blind_review": {
+            "status": "prepared_not_completed",
+            "independent": False,
+        },
+        "deterministic_regression_gates_passed": precision >= 0.85
         and recall >= 0.85
         and pattern_safe == 5
         and security_safe == 15

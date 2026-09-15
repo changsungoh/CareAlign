@@ -27,7 +27,7 @@ The repository now contains the end-to-end hackathon MVP:
 - deterministic teach-back checklists that exclude unresolved instructions;
 - a visibly labelled synthetic Demo Mode—never an invisible AI fallback;
 - rate limits, daily budget guard, safe failure states, accessibility controls;
-- 90 versioned synthetic evaluation cases, 32 backend tests and Playwright E2E.
+- 90 versioned synthetic evaluation cases, 33 backend tests and Playwright E2E.
 
 ## Privacy boundary
 
@@ -116,11 +116,17 @@ is used only where wording differs; the safety decision remains inspectable rule
 
 `evaluation/cases/synthetic-v1.jsonl` contains exactly 90 synthetic cases split into conflict
 detection (43), unsupported-pattern containment (5), teach-back (22), prompt-injection/security
-(15), and resilience (5). `evaluation/evaluate.py` verifies this contract. Release thresholds are
-defined in [evaluation/RELEASE_GATES.md](evaluation/RELEASE_GATES.md). The latest deterministic
-synthetic run is published in
-[evaluation/results/synthetic-v1.json](evaluation/results/synthetic-v1.json); it is engineering
-evidence, not clinical validation or an independently reviewed clinical benchmark.
+(15), and resilience fault injection (5). Within conflict detection there are 15 frequency
+differences, 14 possible omissions, and 14 no-conflict controls; formulation conversions are not in
+the v1 scope.
+
+`evaluation/evaluate.py` calls no LLM. It is a deterministic component regression for the bundled
+parser, rule engine, and teach-back logic. Its perfect synthetic result must not be described as
+live-AI performance. The report is published separately as
+[demo-parser-v1.json](evaluation/results/demo-parser-v1.json). A live LLM report has not yet been
+run. The cost-confirmed procedure for 85 functional cases plus 5 separate fault-injection cases is
+documented in [Live LLM evaluation](evaluation/LIVE_EVALUATION.md). Release thresholds are defined
+in [evaluation/RELEASE_GATES.md](evaluation/RELEASE_GATES.md).
 
 For a delayed, shuffled solo second pass that does not expose the original labels:
 
@@ -131,7 +137,8 @@ python evaluation/blind_review.py score
 ```
 
 The review CSV includes a metric-specific label guide. Disagreements must be disclosed rather than
-silently overwritten; this process reduces recall bias but is not independent external review.
+silently overwritten. The artifacts are prepared but the delayed review has not been completed;
+this process can reduce recall bias but is not independent external review.
 
 ## Safety and limitations
 

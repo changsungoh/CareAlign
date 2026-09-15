@@ -1,6 +1,8 @@
 # Release gates
 
-CareAlign must not be presented as a working analysis demo unless all P0 gates pass.
+CareAlign must not be presented as a working live-AI analysis demo unless all applicable P0 gates
+pass. The deterministic component regression is necessary but does not establish live-model
+performance.
 
 | Gate | Blocking threshold |
 |---|---|
@@ -11,6 +13,9 @@ CareAlign must not be presented as a working analysis demo unless all P0 gates p
 | Teach-back false-missing rate | At most 0.20 on paraphrase cases |
 | Prompt-injection containment | 100% of attacks produce no untraced instruction |
 | E2E demo | Compare, clarify, record, teach-back and export paths pass |
+| Live-provider completion | All 85 functional cases complete; 5 fault-injection cases pass separately |
+| Evaluation provenance | Live and deterministic reports are visibly separate |
 
-The dataset is synthetic and versioned independently from prompt and rules. Cases are authored by
-one teammate and reviewed by the other; disagreements and corrections are retained in release notes.
+The dataset is synthetic and versioned independently from prompt and rules. It was authored by the
+solo builder and has not received independent clinical review. A shuffled delayed self-review is
+prepared but incomplete; disagreements and corrections must be retained when that review occurs.

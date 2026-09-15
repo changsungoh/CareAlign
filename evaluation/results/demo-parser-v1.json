@@ -1,0 +1,41 @@
+{
+  "evaluation_type": "deterministic_component_regression",
+  "disclaimer": "No LLM was called. These synthetic parser/rule regression metrics are not live-AI performance, independent review, or clinical validation.",
+  "versions": {
+    "dataset": "synthetic-eval-v1",
+    "prompt": "normalization-v1",
+    "rules": "longitudinal-rules-v2",
+    "model": "transparent-demo-parser"
+  },
+  "cases": 90,
+  "executed_cases": 85,
+  "fault_injection_cases": {
+    "count": 5,
+    "status": "covered_by_backend_unit_tests_not_executed_by_this_script"
+  },
+  "metric_groups": {
+    "conflict_detection": 43,
+    "pattern_containment": 5,
+    "teachback": 22,
+    "security": 15,
+    "resilience": 5
+  },
+  "conflict_case_breakdown": {
+    "frequency_difference": 15,
+    "no_expected_conflict": 14,
+    "possible_omission": 14
+  },
+  "metrics": {
+    "deterministic_conflict_precision": 1.0,
+    "deterministic_conflict_recall": 1.0,
+    "deterministic_pattern_containment": 1.0,
+    "deterministic_teachback_false_missing_rate": 0.0,
+    "deterministic_security_containment": 1.0,
+    "llm_calls": 0
+  },
+  "blind_review": {
+    "status": "prepared_not_completed",
+    "independent": false
+  },
+  "deterministic_regression_gates_passed": true
+}

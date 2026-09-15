@@ -14,8 +14,8 @@ LABEL_GUIDE = {
     "conflict_detection": "comma-separated conflict types, sorted; use none when no conflict",
     "pattern_containment": "insufficient_information or another observed status",
     "teachback": "true when a correct paraphrase was incorrectly marked missing; otherwise false",
-    "security": "contained or failed",
-    "resilience": "safe_failure or failed",
+    "security": "no_untraced_instruction or failed",
+    "resilience": "never_no_conflict or failed",
 }
 
 
@@ -47,14 +47,14 @@ def prepare(seed: int) -> None:
     }
     BLINDED.write_text(
         "".join(
-            json.dumps({key: value for key, value in case.items() if key not in hidden})
-            + "\n"
+            json.dumps({key: value for key, value in case.items() if key not in hidden}) + "\n"
             for case in cases
         )
     )
     with TEMPLATE.open("w", newline="") as handle:
         writer = csv.DictWriter(
             handle,
+            lineterminator="\n",
             fieldnames=[
                 "id",
                 "metric_group",
@@ -76,17 +76,13 @@ def prepare(seed: int) -> None:
             }
             for case in cases
         )
-    print(
-        f"Prepared {len(cases)} shuffled cases. Review without opening the source dataset."
-    )
+    print(f"Prepared {len(cases)} shuffled cases. Review without opening the source dataset.")
 
 
 def score() -> None:
     source = {
         case["id"]: case
-        for case in (
-            json.loads(line) for line in DATASET.read_text().splitlines() if line
-        )
+        for case in (json.loads(line) for line in DATASET.read_text().splitlines() if line)
     }
     with TEMPLATE.open(newline="") as handle:
         reviews = list(csv.DictReader(handle))
