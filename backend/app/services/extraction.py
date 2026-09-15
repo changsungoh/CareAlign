@@ -90,7 +90,11 @@ async def _call_anthropic(
     document: CareDocument,
     usage_callback: Callable[[dict], None] | None = None,
 ) -> list[dict]:
-    if not settings.anthropic_api_key:
+    # Render's multiline secret editor can preserve a trailing newline. Header
+    # values cannot contain CR/LF, so normalize surrounding whitespace before
+    # constructing the request without ever logging the secret.
+    api_key = settings.anthropic_api_key.strip()
+    if not api_key:
         raise RuntimeError("Live AI is unavailable because ANTHROPIC_API_KEY is not configured.")
     payload = {
         "model": settings.llm_model,
@@ -101,7 +105,7 @@ async def _call_anthropic(
         "output_config": {"format": {"type": "json_schema", "schema": EXTRACTION_SCHEMA}},
     }
     headers = {
-        "x-api-key": settings.anthropic_api_key,
+        "x-api-key": api_key,
         "anthropic-version": "2023-06-01",
         "content-type": "application/json",
     }
