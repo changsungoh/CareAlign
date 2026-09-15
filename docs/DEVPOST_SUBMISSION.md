@@ -10,9 +10,10 @@ every source-linked mismatch into the exact question a patient should ask.
 A patient leaving a hospital may receive instructions from a discharge team, a specialist, and a
 pharmacy. The documents rarely use identical wording, may arrive on different dates, and can quietly
 omit an earlier medication. The patient is then expected to determine whether a change was
-intentional. A systematic review reported a median 50% rate of unintentional medication
-discrepancies among adults after hospital discharge (Alqenae, Steinke, and Keers, *Drug Safety*,
-2020; [PubMed 32125666](https://pubmed.ncbi.nlm.nih.gov/32125666/)).
+intentional. A 2020 systematic review included 54 studies overall; in its adult unintentional
+medication-discrepancy analysis of 11 studies, the median rate after hospital discharge was 50%
+(IQR 39–76%) (Alqenae, Steinke, and Keers, *Drug Safety*, 2020;
+[PubMed 32125666](https://pubmed.ncbi.nlm.nih.gov/32125666/)).
 
 ## What it does
 
@@ -53,6 +54,12 @@ logging is disabled. The hardest design challenge was preserving useful AI seman
 the model make a clinical decision. We addressed this through evidence verification, curated
 salt/form distinctions, unsupported-pattern containment, explicit uncertainty, human-only
 resolution, rate limits, prompt-injection tests, and a visibly labelled Demo Mode.
+
+PRN, conditional, taper, range, and other complex schedules remain source text and are routed to
+review. Future work may separately extract PRN maximum dose/frequency, conditional thresholds, and
+taper-phase context. We also considered an IR-to-ER formulation-change category but excluded it from
+the MVP to avoid introducing a new clinical inference surface without adequate validation; CareAlign
+does not infer whether a formulation change was intentional.
 
 ## Evaluation
 
