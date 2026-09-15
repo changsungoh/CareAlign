@@ -93,7 +93,9 @@ async def _call_anthropic(
     # Render's multiline secret editor can preserve a trailing newline. Header
     # values cannot contain CR/LF, so normalize surrounding whitespace before
     # constructing the request without ever logging the secret.
-    api_key = settings.anthropic_api_key.strip()
+    api_key = "".join(settings.anthropic_api_key.split())
+    if api_key.startswith("ANTHROPIC_API_KEY="):
+        api_key = api_key.removeprefix("ANTHROPIC_API_KEY=").strip('"\'')
     if not api_key:
         raise RuntimeError("Live AI is unavailable because ANTHROPIC_API_KEY is not configured.")
     payload = {
