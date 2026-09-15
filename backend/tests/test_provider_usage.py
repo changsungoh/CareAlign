@@ -18,6 +18,9 @@ class FakeResponse:
 
 
 class FakeClient:
+    def __init__(self) -> None:
+        self.headers: dict[str, str] | None = None
+
     async def __aenter__(self):
         return self
 
@@ -25,12 +28,14 @@ class FakeClient:
         return None
 
     async def post(self, *_args, **_kwargs) -> FakeResponse:
+        self.headers = _kwargs["headers"]
         return FakeResponse()
 
 
 def test_live_provider_usage_is_exposed_to_evaluator(monkeypatch) -> None:
-    monkeypatch.setattr(settings, "anthropic_api_key", "synthetic-test-key")
-    monkeypatch.setattr(extraction.httpx, "AsyncClient", lambda **_kwargs: FakeClient())
+    client = FakeClient()
+    monkeypatch.setattr(settings, "anthropic_api_key", "  synthetic-test-key\r\n")
+    monkeypatch.setattr(extraction.httpx, "AsyncClient", lambda **_kwargs: client)
     captured: list[dict] = []
     document = CareDocument(
         document_id="synthetic",
@@ -41,3 +46,5 @@ def test_live_provider_usage_is_exposed_to_evaluator(monkeypatch) -> None:
     result = asyncio.run(extraction._call_anthropic(document, captured.append))
     assert result == []
     assert captured == [{"input_tokens": 123, "output_tokens": 45}]
+    assert client.headers is not None
+    assert client.headers["x-api-key"] == "synthetic-test-key"
