@@ -4,7 +4,7 @@
 
 1. Connect `changsungoh/CareAlign` and apply `render.yaml`.
 2. Set `ALLOWED_ORIGINS` to the final HTTPS Vercel origin—no wildcard.
-3. Keep `DEBUG_LOG_RAW=false` and `DEMO_MODE=true` for the labelled synthetic demo.
+3. Production live extraction uses `DEBUG_LOG_RAW=false` and `DEMO_MODE=false`. Use Demo Mode only when the UI visibly labels it.
 4. For live extraction, add `ANTHROPIC_API_KEY`, keep the tested snapshot model, set provider spending
    limits, and keep the key out of previews and frontend variables.
 5. Verify `GET /api/health` and `GET /api/version` from an incognito session.
@@ -15,6 +15,13 @@
 2. Set `NEXT_PUBLIC_API_BASE_URL` to the Render HTTPS origin.
 3. Deploy production and test the final production domain, not only a preview URL.
 4. After testing, keep only the production origin in backend CORS.
+
+## Verified production deployment
+
+- Frontend: https://care-align-theta.vercel.app
+- Backend: https://carealign-api.onrender.com
+- Verified 15 September 2026: health, version metadata, frontend, medical disclaimer, and synthetic-only notice passed `scripts/preflight.py`.
+- Verified manually: live two-document analysis, frequency difference, possible omission, source spans, teach-back, browser-session resolution persistence, copy, print, download, and clear-session behavior.
 
 ## Release smoke test
 
