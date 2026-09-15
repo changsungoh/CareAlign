@@ -1,5 +1,10 @@
+import json
+
+import httpx
+import pytest
 from fastapi.testclient import TestClient
 
+from app.api import routes
 from app.core.config import settings
 from app.main import app
 
@@ -50,3 +55,26 @@ def test_unsupported_schedule_is_insufficient_not_completed(monkeypatch) -> None
     response = client.post("/api/analyze", json=payload)
     assert response.status_code == 200
     assert response.json()["status"] == "insufficient_information"
+
+
+@pytest.mark.parametrize(
+    "provider_error",
+    [
+        httpx.TimeoutException("provider timed out"),
+        json.JSONDecodeError("invalid provider JSON", "", 0),
+        RuntimeError("provider refused structured output"),
+    ],
+)
+def test_provider_failures_return_generic_unavailable(
+    monkeypatch, provider_error: Exception
+) -> None:
+    monkeypatch.setattr(settings, "demo_mode", False)
+
+    async def fail_extraction(*_args, **_kwargs):
+        raise provider_error
+
+    monkeypatch.setattr(routes, "extract_document", fail_extraction)
+    response = client.post("/api/analyze", json=DOCUMENTS)
+    assert response.status_code == 503
+    assert response.json()["detail"] == ("Analysis unavailable. No safety conclusion was produced.")
+    assert str(provider_error) not in response.text
