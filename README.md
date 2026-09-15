@@ -141,10 +141,15 @@ silently overwritten; this process reduces recall bias but is not independent ex
 - Medication identity support will initially use a deliberately limited,
   curated alias, salt, and formulation map; optional RxNorm lookup remains a terminology aid rather
   than proof of clinical interchangeability.
-- Complex dosing patterns are preserved as source text and routed to review.
+- PRN, conditional, taper, range, and other complex dosing patterns are preserved as source text
+  and routed to review. Future work may separately extract PRN maximum dose/frequency, conditional
+  thresholds, and taper-phase context; the MVP does not compare them.
 - The prototype is not configured or represented as HIPAA compliant.
 - Demo medication aliases are deliberately limited; similar ingredients with different salts or
   formulations are not collapsed. RxNorm integration is the first post-hackathon clinical-data step.
+- Formulation changes such as IR-to-ER conversions were considered as a distinct, lower-severity
+  category but excluded from the MVP to avoid adding a clinical inference surface without adequate
+  validation. CareAlign does not infer whether such a change was intentional.
 - CareAlign is an experimental decision-support prototype. It is not a
   diagnostic or prescriptive medical device, has not been clinically
   validated, and has not been evaluated or cleared by a regulatory authority.
@@ -159,9 +164,9 @@ evaluation framework, documentation, and deployment integration.
 
 ## Evidence
 
-The project presentation cites a systematic review reporting a median 50%
-rate of unintentional medication discrepancies among adults after hospital
-discharge: Alqenae FA, Steinke D, Keers RN. *Drug Safety* (2020).
+The project presentation cites a 2020 systematic review that included 54 studies overall. In its
+adult unintentional medication-discrepancy analysis of 11 studies, the median rate after hospital
+discharge was 50% (IQR 39–76%): Alqenae FA, Steinke D, Keers RN. *Drug Safety* (2020).
 [PubMed 32125666](https://pubmed.ncbi.nlm.nih.gov/32125666/).
 
 ## AI use disclosure
