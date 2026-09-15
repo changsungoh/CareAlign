@@ -57,7 +57,10 @@ async def analyze(
             await extract_document(document, settings.demo_mode) for document in payload.documents
         ]
     except Exception as error:
-        raise HTTPException(503, f"Analysis unavailable: {error}") from error
+        raise HTTPException(
+            503,
+            "Analysis unavailable. No safety conclusion was produced.",
+        ) from error
     instructions = [item for group in instruction_groups for item in group]
     conflicts = detect_conflicts(instructions, document_ids)
     status = AnalysisStatus.NEEDS_REVIEW if conflicts else AnalysisStatus.COMPLETED

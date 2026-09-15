@@ -27,7 +27,7 @@ The repository now contains the end-to-end hackathon MVP:
 - deterministic teach-back checklists that exclude unresolved instructions;
 - a visibly labelled synthetic Demo Mode—never an invisible AI fallback;
 - rate limits, daily budget guard, safe failure states, accessibility controls;
-- 90 versioned synthetic evaluation cases, 17 backend tests and Playwright E2E.
+- 90 versioned synthetic evaluation cases, 25 backend tests and Playwright E2E.
 
 ## Privacy boundary
 
@@ -51,6 +51,7 @@ deployment topology. Implementation and research extensions are specified in:
 - [Deployment runbook](docs/DEPLOYMENT_RUNBOOK.md)
 - [Judge demo script](docs/DEMO_SCRIPT.md)
 - [Devpost submission draft](docs/DEVPOST_SUBMISSION.md)
+- [Solo release checklist](docs/SOLO_RELEASE_CHECKLIST.md)
 
 ## Local development
 
@@ -121,6 +122,17 @@ synthetic run is published in
 [evaluation/results/synthetic-v1.json](evaluation/results/synthetic-v1.json); it is engineering
 evidence, not clinical validation or an independently reviewed clinical benchmark.
 
+For a delayed, shuffled solo second pass that does not expose the original labels:
+
+```bash
+python evaluation/blind_review.py prepare
+# Complete evaluation/review/labels-v1.csv without opening the source dataset.
+python evaluation/blind_review.py score
+```
+
+The review CSV includes a metric-specific label guide. Disagreements must be disclosed rather than
+silently overwritten; this process reduces recall bias but is not independent external review.
+
 ## Safety and limitations
 
 - CareAlign never resolves a potential conflict autonomously.
@@ -165,6 +177,14 @@ The repository, prompts, rules, synthetic fixtures and limitations are disclosed
   and, for live extraction, the provider key and usage limit.
 - Keep `DEBUG_LOG_RAW=false`. Use `DEMO_MODE=true` only when the UI visibly identifies cached/local
   synthetic behavior. CORS should contain the final production origin before submission.
+
+After both URLs exist, run the fail-fast release check:
+
+```bash
+python scripts/preflight.py \
+  --frontend-url https://YOUR-FRONTEND.example \
+  --backend-url https://YOUR-BACKEND.example
+```
 
 ## License
 
