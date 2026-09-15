@@ -34,7 +34,11 @@ class FakeClient:
 
 def test_live_provider_usage_is_exposed_to_evaluator(monkeypatch) -> None:
     client = FakeClient()
-    monkeypatch.setattr(settings, "anthropic_api_key", "  synthetic-test-key\r\n")
+    monkeypatch.setattr(
+        settings,
+        "anthropic_api_key",
+        "  ANTHROPIC_API_KEY='synthetic-\r\ntest-key'  ",
+    )
     monkeypatch.setattr(extraction.httpx, "AsyncClient", lambda **_kwargs: client)
     captured: list[dict] = []
     document = CareDocument(
