@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "CareAlign synthetic evaluation case",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["case_id", "metric_group", "tags", "author", "reviewer", "expected"],
+  "properties": {
+    "case_id": { "type": "string", "pattern": "^[a-z0-9_-]+$" },
+    "metric_group": {
+      "enum": ["conflict_detection", "pattern_containment", "teachback", "security", "resilience"]
+    },
+    "tags": { "type": "array", "items": { "type": "string" }, "uniqueItems": true },
+    "author": { "type": "string", "minLength": 1 },
+    "reviewer": { "type": "string", "minLength": 1 },
+    "expected": { "type": "object" }
+  }
+}
