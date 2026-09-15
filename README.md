@@ -137,10 +137,6 @@ evidence, not clinical validation or an independently reviewed clinical benchmar
 Leads the system architecture, structured AI pipeline, deterministic conflict
 engine, API development, evaluation framework, and deployment integration.
 
-### JUNG WOOHYEOP - Research & Product Design
-
-Leads the user experience, frontend workflow, healthcare problem research,
-synthetic test scenarios, accessibility design, and demo presentation.
 
 ## Evidence
 
