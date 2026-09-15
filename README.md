@@ -13,6 +13,14 @@ understanding through teach-back.
 > stopping, or changing medication. Always confirm potential conflicts with a
 > qualified healthcare professional.
 
+## Live deployment
+
+- **Application:** [care-align-theta.vercel.app](https://care-align-theta.vercel.app)
+- **API health:** [carealign-api.onrender.com/api/health](https://carealign-api.onrender.com/api/health)
+
+The production frontend uses the Render API with an exact-origin CORS allowlist. Only synthetic,
+de-identified demonstration text may be entered.
+
 ## Working MVP
 
 The repository now contains the end-to-end hackathon MVP:
@@ -191,11 +199,10 @@ The repository, prompts, rules, synthetic fixtures and limitations are disclosed
 
 ## Deployment
 
-- Frontend: deploy `frontend/` to Vercel and set `NEXT_PUBLIC_API_BASE_URL`.
-- Backend: connect the repository to Render using `render.yaml`; set the production frontend origin
-  and, for live extraction, the provider key and usage limit.
-- Keep `DEBUG_LOG_RAW=false`. Use `DEMO_MODE=true` only when the UI visibly identifies cached/local
-  synthetic behavior. CORS should contain the final production origin before submission.
+- Frontend: [https://care-align-theta.vercel.app](https://care-align-theta.vercel.app)
+- Backend: [https://carealign-api.onrender.com](https://carealign-api.onrender.com)
+- Production uses `DEMO_MODE=false`, `DEBUG_LOG_RAW=false`, and the exact Vercel origin in CORS.
+- The Anthropic key is stored only as a Render secret and is never exposed to the frontend.
 
 After both URLs exist, run the fail-fast release check:
 
