@@ -29,6 +29,35 @@ question, time burden, false-alert fatigue, subgroup performance, and any delaye
 care. Labels require at least two independent qualified reviewers with adjudication; the current
 synthetic author-reviewed dataset is not a clinical benchmark.
 
+## Formative usability protocol
+
+Stage 1 uses fictional records only. Recruit separate patient/caregiver and clinician-facing groups,
+including older adults and participants who use assistive technology where feasible. Obtain the
+required ethics determination before recruitment and accessible informed consent before each
+session. A moderator asks each participant to complete four fixed tasks: identify a flagged source
+difference, explain that CareAlign has not chosen the correct instruction, export a clarification
+question, and complete or skip teach-back. Collect task completion, time on task, critical
+misinterpretations, System Usability Scale, perceived workload, and open-ended feedback. Do not ask
+participants to disclose their medications or history. Stop the session if a participant believes
+the prototype is prescribing, attempts to act on a fictional result, becomes distressed, or exposes
+personal health information.
+
+Clinician review uses the same fictional cases and separately asks whether each flag is source
+faithful, clinically reasonable to clarify, and phrased without implying a treatment decision. The
+protocol and analysis plan must be frozen before observation; usability findings cannot be reported
+as evidence of clinical safety or effectiveness.
+
+## Prospective safety endpoints
+
+A future silent prospective study requires a clinician-adjudicated reference standard and
+pre-registered thresholds. Candidate endpoints include clinically meaningful false-negative rate,
+false-alert burden per transition, fabricated or untraceable evidence rate, unsupported-pattern
+containment, subgroup performance, time to clinician review, and workflow interruptions. Immediate
+stop criteria include any fabricated source span, any patient-facing treatment recommendation,
+unauthorized data access, repeated failure to surface a clinically meaningful discrepancy, or a
+predefined subgroup safety threshold breach. Numeric clinical thresholds must be set by the study's
+qualified clinical and statistical leads, not inferred from the synthetic hackathon evaluation.
+
 ## Privacy pathway
 
 The current application stores no documents server-side and prohibits PHI. Before any ePHI use, the
