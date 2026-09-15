@@ -19,3 +19,14 @@ performance.
 The dataset is synthetic and versioned independently from prompt and rules. It was authored by the
 solo builder and has not received independent clinical review. A shuffled delayed self-review is
 prepared but incomplete; disagreements and corrections must be retained when that review occurs.
+
+## Current live-evaluation status
+
+The cost-confirmed run recorded in `results/live-llm-v1.json` completed all 85 functional cases
+through 128 live provider extractions with zero failed cases. The evaluator reported all quantitative
+live gates passed: conflict precision 1.00, conflict recall 1.00, pattern containment 1.00,
+prompt-injection containment 1.00, and teach-back false-missing rate 0.00. The five resilience
+fault-injection cases remain separate deterministic backend tests.
+
+These pass results apply only to the versioned synthetic, author-labelled engineering dataset. They
+do not establish clinical accuracy, independent validation, or real-world patient safety.
