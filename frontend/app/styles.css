@@ -164,6 +164,7 @@ textarea { resize: vertical; }
 .remove { border: 0; background: transparent; color: #9a1b1b; text-decoration: underline; }
 .error { margin-top: 20px; padding: 15px; border: 1px solid #bd2c2c; border-radius: 8px; background: #fff0f0; color: #7c1515; }
 .validation-hint { color: #934d00; font-weight: 700; }
+.slow-start { margin: 12px 0 0; color: #4d5d50; font-weight: 700; }
 .result-actions { justify-content: flex-start; margin: 24px 0; }
 .result-actions button { background: #fff; color: var(--green); border: 1px solid var(--green); }
 .result-actions .primary { background: var(--green); color: #fff; }
