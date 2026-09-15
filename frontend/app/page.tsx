@@ -46,6 +46,7 @@ export default function Home() {
   const [teachBack, setTeachBack] = useState("");
   const [teachResult, setTeachResult] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [slowStart, setSlowStart] = useState(false);
   const [error, setError] = useState("");
   const [largeText, setLargeText] = useState(false);
 
@@ -85,7 +86,8 @@ export default function Home() {
   }
 
   async function analyze() {
-    setBusy(true); setError(""); setTeachResult(null);
+    setBusy(true); setSlowStart(false); setError(""); setTeachResult(null);
+    const slowStartTimer = window.setTimeout(() => setSlowStart(true), 5000);
     try {
       const response = await fetch(`${API}/api/analyze`, {
         method: "POST", headers: { "Content-Type": "application/json" },
@@ -97,7 +99,11 @@ export default function Home() {
       requestAnimationFrame(() => document.querySelector("#results")?.scrollIntoView());
     } catch (reason) {
       setError(reason instanceof Error ? reason.message : "Analysis failed safely.");
-    } finally { setBusy(false); }
+    } finally {
+      window.clearTimeout(slowStartTimer);
+      setSlowStart(false);
+      setBusy(false);
+    }
   }
 
   function recordResolution(conflict: Conflict, response: string) {
@@ -164,6 +170,7 @@ export default function Home() {
       <label className="consent"><input type="checkbox" checked={consent} onChange={(event) => setConsent(event.target.checked)} /> I confirm this is synthetic data and understand CareAlign does not provide medical advice.</label>
       {!documentsValid && <p className="validation-hint">Every record needs a unique date and must appear from oldest to newest.</p>}
       <button className="primary" disabled={!consent || !documentsValid || busy} onClick={analyze}>{busy ? "Checking safely…" : "Compare instructions"}</button>
+      {slowStart && <p className="slow-start" role="status">The secure analysis server is starting. After inactivity, the first request may take up to 60 seconds.</p>}
       {error && <div className="error" role="alert">{error}</div>}
     </section>
     {analysis && <section className="results" id="results" aria-labelledby="results-title" aria-live="polite">
