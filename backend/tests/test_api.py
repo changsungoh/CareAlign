@@ -15,7 +15,7 @@ def test_version_exposes_reproducibility_metadata() -> None:
     response = client.get("/api/version")
     body = response.json()
     assert response.status_code == 200
-    assert body["app_version"] == "0.1.0"
+    assert body["app_version"] == "0.2.0"
     assert body["prompt_version"]
     assert body["rules_version"]
     assert body["dataset_version"]

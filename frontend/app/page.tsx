@@ -17,7 +17,8 @@ type Conflict = {
   status: string; confidence: number; evidence_spans: string[];
 };
 type Analysis = {
-  case_id: string; status: string; instructions: Instruction[]; conflicts: Conflict[];
+  case_id: string; status: string; documents: DocumentInput[];
+  instructions: Instruction[]; conflicts: Conflict[];
   safety_message: string; demo_mode: boolean;
   metadata: { model_name: string; prompt_version: string; rules_version: string };
 };
@@ -55,10 +56,32 @@ export default function Home() {
   const unresolvedIds = useMemo(
     () => analysis?.conflicts.flatMap((item) => item.instruction_ids) ?? [], [analysis],
   );
+  const documentsValid = useMemo(() => {
+    const dates = documents.map((item) => item.document_date);
+    return documents.every((item) => item.document_type.trim() && item.document_date && item.raw_text.trim())
+      && new Set(dates).size === dates.length
+      && dates.every((value, index) => index === 0 || dates[index - 1] < value);
+  }, [documents]);
 
   function updateDocument(index: number, key: keyof DocumentInput, value: string) {
     setDocuments((current) => current.map((document, itemIndex) =>
       itemIndex === index ? { ...document, [key]: value } : document));
+  }
+
+  function addDocument() {
+    if (documents.length >= 5) return;
+    const next = documents.length + 1;
+    setDocuments((current) => [...current, {
+      document_id: `document-${next}`,
+      document_type: "Additional care record",
+      document_date: "",
+      raw_text: "",
+    }]);
+  }
+
+  function removeDocument(index: number) {
+    if (documents.length <= 2) return;
+    setDocuments((current) => current.filter((_, itemIndex) => itemIndex !== index));
   }
 
   async function analyze() {
@@ -130,21 +153,23 @@ export default function Home() {
       <aside className="warning"><h2>Research prototype — not medical advice</h2><p>Never start, stop, or change medication based on this tool. CareAlign cannot decide which instruction is correct. Confirm every flag with a qualified healthcare professional.</p></aside>
     </section>
     <section className="workspace" aria-labelledby="workspace-title">
-      <div className="section-heading"><div><p className="eyebrow">SYNTHETIC DEMO</p><h2 id="workspace-title">Compare care documents</h2></div><button className="quiet" onClick={() => setDocuments(demoDocuments)}>Load safe demo</button></div>
+      <div className="section-heading"><div><p className="eyebrow">SYNTHETIC DEMO · 2–5 RECORDS</p><h2 id="workspace-title">Compare a care timeline</h2></div><div className="result-actions"><button className="quiet" onClick={() => setDocuments(demoDocuments)}>Load safe demo</button><button className="quiet" disabled={documents.length >= 5} onClick={addDocument}>Add document</button></div></div>
       <div className="privacy-banner"><strong>Do not enter real patient data.</strong> Use synthetic, de-identified demonstration text only. Input is not stored by the server.</div>
       <div className="document-grid">{documents.map((document, index) => <article className="document-card" key={document.document_id}>
-        <span className="step">Document {index + 1}</span>
+        <div className="conflict-top"><span className="step">Document {index + 1}</span>{documents.length > 2 && <button className="remove" onClick={() => removeDocument(index)} aria-label={`Remove document ${index + 1}`}>Remove</button>}</div>
         <label>Document type<input value={document.document_type} onChange={(event) => updateDocument(index, "document_type", event.target.value)} /></label>
         <label>Date<input type="date" value={document.document_date} onChange={(event) => updateDocument(index, "document_date", event.target.value)} /></label>
         <label>Instruction text<textarea maxLength={4000} rows={8} value={document.raw_text} onChange={(event) => updateDocument(index, "raw_text", event.target.value)} /></label><small>{document.raw_text.length}/4,000 characters</small>
       </article>)}</div>
       <label className="consent"><input type="checkbox" checked={consent} onChange={(event) => setConsent(event.target.checked)} /> I confirm this is synthetic data and understand CareAlign does not provide medical advice.</label>
-      <button className="primary" disabled={!consent || busy} onClick={analyze}>{busy ? "Checking safely…" : "Compare instructions"}</button>
+      {!documentsValid && <p className="validation-hint">Every record needs a unique date and must appear from oldest to newest.</p>}
+      <button className="primary" disabled={!consent || !documentsValid || busy} onClick={analyze}>{busy ? "Checking safely…" : "Compare instructions"}</button>
       {error && <div className="error" role="alert">{error}</div>}
     </section>
     {analysis && <section className="results" id="results" aria-labelledby="results-title" aria-live="polite">
       <div className="section-heading"><div><p className="eyebrow">SOURCE-LINKED RESULTS</p><h2 id="results-title">{analysis.conflicts.length} potential difference{analysis.conflicts.length === 1 ? "" : "s"} to confirm</h2></div>{analysis.demo_mode && <span className="demo-badge">Demo mode · transparent parser</span>}</div>
       <p className="safety-line">{analysis.safety_message}</p>
+      <ol className="timeline" aria-label="Document chronology">{analysis.documents.map((document) => <li key={document.document_id}><time>{document.document_date}</time><strong>{document.document_type}</strong><span>{document.document_id}</span></li>)}</ol>
       <div className="result-actions"><button onClick={copyQuestions}>Copy questions</button><button onClick={() => window.print()}>Print</button><button onClick={downloadSummary}>Download</button></div>
       {analysis.conflicts.length === 0 ? <div className="empty">No rule-verifiable differences were found. This is not a guarantee that the records are correct or complete.</div> : analysis.conflicts.map((conflict) => <ConflictCard key={conflict.conflict_id} conflict={conflict} resolution={resolutions.find((item) => item.conflictId === conflict.conflict_id)} onResolve={recordResolution} />)}
       <section className="teachback" aria-labelledby="teach-title"><p className="eyebrow">OPTIONAL TEACH-BACK</p><h2 id="teach-title">Explain the confirmed instructions in your own words</h2><p>Unresolved or uncertain instructions are excluded. This is a supportive review, not a test.</p>

@@ -50,6 +50,10 @@ class MedicationIdentity(StrictModel):
     ingredient: str | None = None
     salt: str | None = None
     form: str | None = None
+    terminology: str = "curated"
+    rxcui: str | None = None
+    concept_name: str | None = None
+    lookup_status: str = "not_requested"
 
 
 class Dose(StrictModel):

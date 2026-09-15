@@ -17,10 +17,10 @@ understanding through teach-back.
 
 The repository now contains the end-to-end hackathon MVP:
 
-- two-document synthetic comparison with required dates and input limits;
+- two-to-five-document longitudinal comparison with required unique dates and input limits;
 - structured LLM extraction with a prompt-injection boundary;
 - exact/fuzzy evidence-span verification and strict schemas;
-- curated medication identity, salt/form, route and mass-unit normalization;
+- curated medication identity plus optional RxNorm resolution, salt/form, route and mass-unit normalization;
 - deterministic dose, frequency, route, action and possible-omission checks;
 - source-linked clarification questions with copy, print and download actions;
 - user-only resolution notes in browser `sessionStorage`;
@@ -44,7 +44,13 @@ CareAlign backend.
 ## Architecture
 
 See [Architecture](docs/ARCHITECTURE.md) for trust boundaries, data flow, failure modes and
-deployment topology.
+deployment topology. Implementation and research extensions are specified in:
+
+- [FHIR and RxNorm integration](docs/FHIR_RXNORM_INTEGRATION.md)
+- [Clinical, privacy, and regulatory roadmap](docs/CLINICAL_REGULATORY_ROADMAP.md)
+- [Deployment runbook](docs/DEPLOYMENT_RUNBOOK.md)
+- [Judge demo script](docs/DEMO_SCRIPT.md)
+- [Devpost submission draft](docs/DEVPOST_SUBMISSION.md)
 
 ## Local development
 
@@ -121,7 +127,8 @@ evidence, not clinical validation or an independently reviewed clinical benchmar
 - A failed or uncertain analysis must not be displayed as `no conflict`.
 - Extracted evidence must be traceable to the supplied source text.
 - Medication identity support will initially use a deliberately limited,
-  curated alias, salt, and formulation map.
+  curated alias, salt, and formulation map; optional RxNorm lookup remains a terminology aid rather
+  than proof of clinical interchangeability.
 - Complex dosing patterns are preserved as source text and routed to review.
 - The prototype is not configured or represented as HIPAA compliant.
 - Demo medication aliases are deliberately limited; similar ingredients with different salts or
@@ -132,11 +139,11 @@ evidence, not clinical validation or an independently reviewed clinical benchmar
 
 ## Team
 
-### OH CHANGSUNG - AI & Backend Development
+### OH CHANGSUNG — Solo Builder
 
-Leads the system architecture, structured AI pipeline, deterministic conflict
-engine, API development, evaluation framework, and deployment integration.
-
+Designed and implemented the product strategy, healthcare research, system architecture,
+structured AI pipeline, deterministic conflict engine, frontend workflow, accessibility,
+evaluation framework, documentation, and deployment integration.
 
 ## Evidence
 

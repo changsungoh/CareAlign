@@ -3,7 +3,7 @@
   "versions": {
     "dataset": "synthetic-eval-v1",
     "prompt": "normalization-v1",
-    "rules": "conflict-rules-v1",
+    "rules": "longitudinal-rules-v2",
     "model": "transparent-demo-parser"
   },
   "cases": 90,

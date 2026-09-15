@@ -48,3 +48,23 @@ def test_equivalent_mass_units_do_not_conflict() -> None:
     left.dose = Dose(raw_value="0.5", raw_unit="g")
     right.dose = Dose(raw_value="500", raw_unit="mg")
     assert detect_conflicts([left, right], ["old", "new"]) == []
+
+
+def test_longitudinal_frequency_alerts_are_collapsed() -> None:
+    conflicts = detect_conflicts(
+        [instruction("a", "first", 2), instruction("b", "second", 1), instruction("c", "third", 3)],
+        ["first", "second", "third"],
+    )
+    assert len(conflicts) == 1
+    assert conflicts[0].document_ids == ["first", "second", "third"]
+    assert "first → second" in conflicts[0].summary
+    assert "second → third" in conflicts[0].summary
+
+
+def test_missing_middle_document_yields_one_longitudinal_omission() -> None:
+    conflicts = detect_conflicts(
+        [instruction("a", "first", 1), instruction("c", "third", 1)],
+        ["first", "second", "third"],
+    )
+    assert len(conflicts) == 1
+    assert conflicts[0].conflict_type == "possible_omission"

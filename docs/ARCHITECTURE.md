@@ -32,6 +32,7 @@ insufficient-information states.
 | `extraction.py` | Provider adapter and labelled synthetic demo parser | Untrusted-data prompt boundary; no inference instruction |
 | `evidence.py` | Normalized exact and high-similarity span check | Untraced text cannot be displayed as validated |
 | `normalization.py` | Decimal mass conversion, route and medication maps | Unknown equivalence is never guessed |
+| `rxnorm.py` | Optional NLM terminology resolution | Ambiguous/unavailable lookup fails to review |
 | `conflicts.py` | Dose/frequency/route/action/omission checks | Deterministic, auditable and cannot choose the correct order |
 | `teachback.py` | Source-derived checklist and supportive feedback | Conflicted/unvalidated items cannot become an answer key |
 | `rate_limit.py` | Per-IP minute and global daily ceilings | Bounds denial-of-wallet exposure |
@@ -60,7 +61,7 @@ PHI or represented as HIPAA compliant.
 
 ## Extension path
 
-The request schema already accepts 2–5 documents; comparison is grouped by medication identity and
-can extend beyond pairwise display. Post-hackathon priorities are RxNorm identity resolution, FHIR
-read-only import with explicit consent, clinician-reviewed labels, multilingual plain language,
-prospective usability work, and formal clinical/regulatory assessment.
+The request and UI accept 2–5 uniquely dated documents. The engine checks each longitudinal
+transition and collapses duplicate alert types while preserving every contributing source.
+Post-hackathon priorities are consented FHIR read-only import, clinician-reviewed labels,
+multilingual plain language, prospective usability work, and formal clinical/regulatory assessment.

@@ -47,6 +47,9 @@ async def analyze(
     document_ids = [document.document_id for document in payload.documents]
     if len(document_ids) != len(set(document_ids)):
         raise HTTPException(422, "Document IDs must be unique.")
+    dates = [document.document_date for document in payload.documents]
+    if len(dates) != len(set(dates)):
+        raise HTTPException(422, "Document dates must be unique to establish chronology.")
     if payload.documents != sorted(payload.documents, key=lambda item: item.document_date):
         raise HTTPException(422, "Documents must be ordered from oldest to newest.")
     try:

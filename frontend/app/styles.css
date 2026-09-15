@@ -161,7 +161,9 @@ textarea { resize: vertical; }
 .consent { display: flex; align-items: flex-start; gap: 10px; margin: 24px 0; line-height: 1.5; }
 .consent input { width: 20px; height: 20px; flex: 0 0 auto; }
 .primary, .conflict-card button, .result-actions button { border: 0; border-radius: 9px; padding: 12px 17px; background: var(--green); color: white; font-weight: 800; }
+.remove { border: 0; background: transparent; color: #9a1b1b; text-decoration: underline; }
 .error { margin-top: 20px; padding: 15px; border: 1px solid #bd2c2c; border-radius: 8px; background: #fff0f0; color: #7c1515; }
+.validation-hint { color: #934d00; font-weight: 700; }
 .result-actions { justify-content: flex-start; margin: 24px 0; }
 .result-actions button { background: #fff; color: var(--green); border: 1px solid var(--green); }
 .result-actions .primary { background: var(--green); color: #fff; }
@@ -176,6 +178,10 @@ blockquote { display: grid; gap: 8px; margin: 20px 0; padding: 16px; border-left
 .teachback { margin-top: 44px; background: #f5f8ff; border-color: #cdd8ee; }
 .danger-link { margin-top: 24px; border: 0; background: transparent; color: #9a1b1b; text-decoration: underline; }
 .metadata { color: var(--muted); font-size: .78rem; }
+.timeline { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin: 28px 0; padding: 0; list-style: none; counter-reset: records; }
+.timeline li { position: relative; display: grid; gap: 5px; min-height: 120px; padding: 18px; border: 1px solid var(--line); border-radius: 12px; background: var(--green-soft); }
+.timeline li::before { counter-increment: records; content: counter(records); width: 24px; height: 24px; display: grid; place-items: center; border-radius: 50%; background: var(--green); color: white; font-weight: 800; }
+.timeline time, .timeline span { color: var(--muted); font-size: .82rem; }
 
 .principles h2 {
   font-size: clamp(2rem, 4vw, 3.2rem);
