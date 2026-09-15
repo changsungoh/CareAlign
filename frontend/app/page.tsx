@@ -63,6 +63,17 @@ export default function Home() {
       && new Set(dates).size === dates.length
       && dates.every((value, index) => index === 0 || dates[index - 1] < value);
   }, [documents]);
+  const recordedConflictIds = useMemo(
+    () => new Set(resolutions.map((item) => item.conflictId)), [resolutions],
+  );
+  const pendingConflicts = useMemo(
+    () => analysis?.conflicts.filter((item) => !recordedConflictIds.has(item.conflict_id)) ?? [],
+    [analysis, recordedConflictIds],
+  );
+  const recordedConflicts = useMemo(
+    () => analysis?.conflicts.filter((item) => recordedConflictIds.has(item.conflict_id)) ?? [],
+    [analysis, recordedConflictIds],
+  );
 
   function updateDocument(index: number, key: keyof DocumentInput, value: string) {
     setDocuments((current) => current.map((document, itemIndex) =>
@@ -134,7 +145,7 @@ export default function Home() {
   async function copyQuestions() {
     if (!analysis) return;
     await navigator.clipboard.writeText(
-      analysis.conflicts.map((item) => `• ${item.clarification_question}`).join("\n"));
+      pendingConflicts.map((item) => `• ${item.clarification_question}`).join("\n"));
   }
   function downloadSummary() {
     if (!analysis) return;
@@ -180,11 +191,16 @@ export default function Home() {
       {error && <div className="error" role="alert">{error}</div>}
     </section>
     {analysis && <section className="results" id="results" aria-labelledby="results-title" aria-live="polite">
-      <div className="section-heading results-heading"><div><span className="section-number">02</span><p className="eyebrow">SOURCE-LINKED RESULTS</p><h2 id="results-title">{analysis.conflicts.length} potential difference{analysis.conflicts.length === 1 ? "" : "s"} to confirm</h2><p className="section-copy">CareAlign never decides which instruction is correct. Each flag becomes a focused question for a human care professional.</p></div>{analysis.demo_mode && <span className="demo-badge">Demo mode · transparent parser</span>}</div>
+      <div className="section-heading results-heading"><div><span className="section-number">02</span><p className="eyebrow">SOURCE-LINKED RESULTS</p><h2 id="results-title">{analysis.conflicts.length === 0 ? "No rule-verifiable differences found" : pendingConflicts.length === 0 ? "Responses recorded for every difference" : `${pendingConflicts.length} difference${pendingConflicts.length === 1 ? "" : "s"} still need${pendingConflicts.length === 1 ? "s" : ""} a response`}</h2><p className="section-copy">CareAlign never decides which instruction is correct. Recording a response completes the follow-up step without marking the clinical flag as resolved.</p></div>{analysis.demo_mode && <span className="demo-badge">Demo mode · transparent parser</span>}</div>
       <p className="safety-line">{analysis.safety_message}</p>
       <ol className="timeline" aria-label="Document chronology">{analysis.documents.map((document) => <li key={document.document_id}><time>{document.document_date}</time><strong>{document.document_type}</strong><span>{document.document_id}</span></li>)}</ol>
-      <div className="result-actions"><button onClick={copyQuestions}>Copy questions</button><button onClick={() => window.print()}>Print</button><button onClick={downloadSummary}>Download</button></div>
-      {analysis.conflicts.length === 0 ? <div className="empty">No rule-verifiable differences were found. This is not a guarantee that the records are correct or complete.</div> : analysis.conflicts.map((conflict) => <ConflictCard key={conflict.conflict_id} conflict={conflict} resolution={resolutions.find((item) => item.conflictId === conflict.conflict_id)} onResolve={recordResolution} />)}
+      <div className="result-actions"><button disabled={pendingConflicts.length === 0} onClick={copyQuestions}>Copy open questions</button><button onClick={() => window.print()}>Print</button><button onClick={downloadSummary}>Download</button></div>
+      {analysis.conflicts.length === 0 ? <div className="empty">No rule-verifiable differences were found. This is not a guarantee that the records are correct or complete.</div> : <>
+        {pendingConflicts.map((conflict) => <ConflictCard key={conflict.conflict_id} conflict={conflict} onResolve={recordResolution} />)}
+        {recordedConflicts.length > 0 && <section className="recorded-section" aria-labelledby="recorded-title"><div className="recorded-heading"><div><p className="eyebrow">FOLLOW-UP CAPTURED</p><h3 id="recorded-title">{recordedConflicts.length} response{recordedConflicts.length === 1 ? "" : "s"} recorded</h3></div><span>Not verified by CareAlign</span></div>
+          {recordedConflicts.map((conflict) => <ConflictCard key={conflict.conflict_id} conflict={conflict} resolution={resolutions.find((item) => item.conflictId === conflict.conflict_id)} onResolve={recordResolution} />)}
+        </section>}
+      </>}
       <section className="teachback" aria-labelledby="teach-title"><div className="teach-icon" aria-hidden="true">✓</div><p className="eyebrow">OPTIONAL TEACH-BACK</p><h2 id="teach-title">Explain the confirmed instructions in your own words</h2><p>Unresolved or uncertain instructions are excluded. This is a supportive review, not a test.</p>
         <textarea rows={4} value={teachBack} onChange={(event) => setTeachBack(event.target.value)} placeholder="Example: I will take lisinopril 10 mg once a day in the morning." />
         <div className="result-actions"><button className="primary" disabled={busy || !teachBack.trim()} onClick={submitTeachBack}>Check my explanation</button><button className="quiet" onClick={() => setTeachBack("")}>Skip teach-back</button></div>{teachResult && <div className="teach-result" role="status">{teachResult}</div>}
@@ -198,10 +214,15 @@ export default function Home() {
 
 function ConflictCard({ conflict, resolution, onResolve }: { conflict: Conflict; resolution?: Resolution; onResolve: (conflict: Conflict, response: string) => void }) {
   const [response, setResponse] = useState(resolution?.response ?? "");
-  return <article className="conflict-card"><div className="conflict-top"><span className="conflict-type">{conflict.conflict_type.replaceAll("_", " ")}</span><span className="confidence-score"><i><b style={{ width: `${Math.round(conflict.confidence * 100)}%` }} /></i>{Math.round(conflict.confidence * 100)}% rule confidence</span></div>
-    <h3>{conflict.medication_name}</h3><p>{conflict.summary}</p><blockquote>{conflict.evidence_spans.map((span) => <span key={span}>“{span}”</span>)}</blockquote>
-    <div className="question"><strong>Ask your care team</strong><p>{conflict.clarification_question}</p></div>
-    <label>Record care team response <span className="unverified">User-entered · not verified by CareAlign</span><textarea rows={2} value={response} onChange={(event) => setResponse(event.target.value)} /></label>
-    <button onClick={() => onResolve(conflict, response)}>Save to this browser session</button>{resolution && <p className="saved">Response recorded by the user. CareAlign did not resolve this flag.</p>}
+  const [editing, setEditing] = useState(!resolution);
+  function saveResponse() { onResolve(conflict, response); if (response.trim()) setEditing(false); }
+  return <article className={`conflict-card${resolution && !editing ? " recorded-card" : ""}`}><div className="conflict-top"><span className="conflict-type">{conflict.conflict_type.replaceAll("_", " ")}</span>{resolution && !editing ? <span className="recorded-status">Response recorded</span> : <span className="confidence-score"><i><b style={{ width: `${Math.round(conflict.confidence * 100)}%` }} /></i>{Math.round(conflict.confidence * 100)}% rule confidence</span>}</div>
+    <h3>{conflict.medication_name}</h3><p>{conflict.summary}</p>
+    {resolution && !editing ? <div className="recorded-response"><strong>Recorded care-team response</strong><p>{resolution.response}</p><small>User-entered · not verified by CareAlign · {new Date(resolution.recordedAt).toLocaleString()}</small><button className="edit-response" onClick={() => setEditing(true)}>Edit response</button></div> : <>
+      <blockquote>{conflict.evidence_spans.map((span) => <span key={span}>“{span}”</span>)}</blockquote>
+      <div className="question"><strong>Ask your care team</strong><p>{conflict.clarification_question}</p></div>
+      <label>Record care team response <span className="unverified">User-entered · not verified by CareAlign</span><textarea rows={2} value={response} onChange={(event) => setResponse(event.target.value)} /></label>
+      <button disabled={!response.trim()} onClick={saveResponse}>{resolution ? "Update recorded response" : "Save to this browser session"}</button>
+    </>}
   </article>;
 }
