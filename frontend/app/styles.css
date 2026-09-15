@@ -31,14 +31,14 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 .nav-actions, .section-heading, .result-actions, .conflict-top { display: flex; align-items: center; justify-content: space-between; gap: 14px; }
 .live-status { display: inline-flex; align-items: center; gap: 8px; color: var(--muted); font-size: .78rem; font-weight: 750; }
 .live-status i { width: 8px; height: 8px; border-radius: 50%; background: #22b573; box-shadow: 0 0 0 5px rgba(34,181,115,.11); }
-.prototype-badge { padding: 8px 12px; border: 1px solid var(--line-strong); border-radius: 999px; background: #fff; color: var(--ink-soft); font-size: .76rem; font-weight: 750; }
+.prototype-badge { padding: 8px 12px; border: 1px solid #e9cf89; border-radius: 999px; background: #fff7df; color: #705214; font-size: .76rem; font-weight: 800; }
 .quiet { min-height: 40px; padding: 9px 14px; border: 1px solid var(--line-strong); border-radius: 10px; background: #fff; color: var(--ink); font-weight: 750; transition: .18s ease; }
 .quiet:hover:not(:disabled) { border-color: var(--teal); color: var(--teal-dark); transform: translateY(-1px); box-shadow: var(--shadow-sm); }
 .large-text { font-size: 1.18rem; }
 
 .hero { width: min(1240px, calc(100% - 48px)); margin: 56px auto 46px; display: grid; grid-template-columns: 1.03fr .97fr; gap: clamp(42px,6vw,86px); align-items: center; }
 .hero-copy { padding: 40px 0; }
-.hero-label { width: fit-content; display: inline-flex; align-items: center; gap: 9px; padding: 8px 12px; border: 1px solid #cce9e1; border-radius: 999px; background: rgba(255,255,255,.72); color: var(--teal-dark); font-size: .76rem; font-weight: 800; letter-spacing: .04em; text-transform: uppercase; }
+.hero-label { width: fit-content; display: inline-flex; align-items: center; gap: 9px; padding: 8px 12px; border: 1px solid #cce9e1; border-radius: 999px; background: rgba(255,255,255,.72); color: var(--teal-dark); font-size: .76rem; font-weight: 800; letter-spacing: .09em; text-transform: uppercase; }
 .pulse-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--mint); box-shadow: 0 0 0 5px rgba(37,194,160,.13); }
 h1 { max-width: 740px; margin: 24px 0 22px; font-size: clamp(3.3rem,5.7vw,5.75rem); line-height: .92; letter-spacing: -.072em; font-weight: 850; }
 h1 span { color: var(--teal); }
@@ -100,7 +100,8 @@ input, textarea { width: 100%; border: 1px solid var(--line-strong); border-radi
 input:hover, textarea:hover { border-color: #9ebdb5; }
 input:focus, textarea:focus { border-color: var(--teal); background: #fff; box-shadow: 0 0 0 4px rgba(15,118,110,.08); outline: 0; }
 textarea { resize: vertical; }
-.document-card small { color: #91a19d; font-size: .68rem; }
+.document-card label textarea { padding-bottom: 29px; }
+.document-card > small { position: relative; z-index: 1; display: block; width: fit-content; margin: -25px 8px 8px auto; padding: 2px 5px; border-radius: 5px; background: rgba(251,253,252,.92); color: #91a19d; font-size: .68rem; pointer-events: none; }
 .step, .conflict-type, .demo-badge { display: inline-flex; border-radius: 999px; padding: 6px 9px; background: var(--mint-soft); color: var(--teal-dark); font-size: .66rem; font-weight: 850; text-transform: uppercase; letter-spacing: .07em; }
 .consent { display: flex; align-items: flex-start; gap: 11px; margin: 23px 0 17px; padding: 15px 16px; border: 1px solid var(--line); border-radius: 12px; background: #fafcfb; color: var(--ink-soft); font-size: .82rem; line-height: 1.45; }
 .consent input { width: 18px; height: 18px; flex: 0 0 auto; accent-color: var(--teal); }
@@ -156,6 +157,7 @@ blockquote { display: grid; gap: 7px; margin: 18px 0; padding: 15px 17px; border
 .principles-heading > p:last-child { color: #9db7b1; line-height: 1.6; }
 .principle-grid { display: grid; gap: 12px; }
 .principle-grid article { position: relative; padding: 20px 22px 20px 70px; border: 1px solid rgba(255,255,255,.1); border-radius: 16px; background: rgba(255,255,255,.045); }
+.principle-grid article:not(:last-child)::after { content: ""; position: absolute; z-index: 2; left: 31px; bottom: -13px; width: 1px; height: 12px; background: rgba(185,243,227,.34); }
 .principle-grid article > span { position: absolute; left: 20px; top: 21px; color: var(--mint); font-family: ui-monospace,monospace; font-size: .72rem; font-weight: 800; }
 .principle-grid h3 { margin: 0 0 7px; color: #fff; font-size: 1rem; }
 .principle-grid p { margin: 0; color: #9db7b1; font-size: .78rem; line-height: 1.55; }
