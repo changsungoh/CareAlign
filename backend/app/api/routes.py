@@ -1,6 +1,8 @@
 import hashlib
+import logging
 from datetime import UTC, datetime
 
+import httpx
 from fastapi import APIRouter, Depends, HTTPException, Request
 
 from app.core.config import settings
@@ -21,6 +23,7 @@ from app.services.rate_limit import enforce_rate_limit
 from app.services.teachback import evaluate_teachback
 
 router = APIRouter()
+logger = logging.getLogger(__name__)
 
 
 @router.get("/health", response_model=HealthResponse)
@@ -58,6 +61,16 @@ async def analyze(
             await extract_document(document, settings.demo_mode) for document in payload.documents
         ]
     except Exception as error:
+        # Record only operational metadata. Never log document text, provider
+        # response bodies, request headers, or API keys.
+        upstream_status = (
+            error.response.status_code if isinstance(error, httpx.HTTPStatusError) else None
+        )
+        logger.error(
+            "analysis_extraction_failed error_type=%s upstream_status=%s",
+            type(error).__name__,
+            upstream_status,
+        )
         raise HTTPException(
             503,
             "Analysis unavailable. No safety conclusion was produced.",
