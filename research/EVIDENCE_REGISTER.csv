@@ -1,0 +1,2 @@
+artifact_id,workstream,gate,artifact_name,version,created_at_utc,owner,sha256,classification,approval_or_signature,status,deviation_reference,public_release
+CA-EV-0001,governance,0,Ethics determination request,0.1-draft,2026-09-16T00:00:00Z,OH CHANGSUNG,,public-template,,draft,,yes
