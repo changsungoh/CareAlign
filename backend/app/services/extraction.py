@@ -95,7 +95,7 @@ async def _call_anthropic(
     # constructing the request without ever logging the secret.
     api_key = "".join(settings.anthropic_api_key.split())
     if api_key.startswith("ANTHROPIC_API_KEY="):
-        api_key = api_key.removeprefix("ANTHROPIC_API_KEY=").strip('"\'')
+        api_key = api_key.removeprefix("ANTHROPIC_API_KEY=").strip("\"'")
     if not api_key:
         raise RuntimeError("Live AI is unavailable because ANTHROPIC_API_KEY is not configured.")
     payload = {
@@ -218,15 +218,33 @@ async def extract_document(
         terminology = "curated"
         rxcui = None
         concept_name = None
+        term_type = None
+        canonical_rxcui = None
+        canonical_name = None
+        canonical_term_type = None
+        match_strategy = None
+        rxnorm_dataset_version = None
+        rxnorm_api_version = None
         lookup_status = "not_requested"
         if identity["normalized_id"] is None:
             rxnorm = await rxnorm_client.resolve(str(item.get("raw_name", "")))
             lookup_status = rxnorm.status
+            rxcui = rxnorm.rxcui
+            concept_name = rxnorm.concept_name
+            term_type = rxnorm.term_type
+            canonical_rxcui = rxnorm.canonical_rxcui
+            canonical_name = rxnorm.canonical_name
+            canonical_term_type = rxnorm.canonical_term_type
+            match_strategy = rxnorm.match_strategy
+            rxnorm_dataset_version = rxnorm.dataset_version
+            rxnorm_api_version = rxnorm.api_version
             if rxnorm.normalized_id:
                 identity["normalized_id"] = rxnorm.normalized_id
                 terminology = "rxnorm"
-                rxcui = rxnorm.rxcui
-                concept_name = rxnorm.concept_name
+            elif rxnorm.rxcui:
+                terminology = "rxnorm_candidate"
+            else:
+                terminology = "unresolved"
         route_raw = item.get("route")
         route_normalized = normalize_route(route_raw) if route_raw else None
         status = ValidationStatus.VALIDATED
@@ -251,6 +269,13 @@ async def extract_document(
                     terminology=terminology,
                     rxcui=rxcui,
                     concept_name=concept_name,
+                    term_type=term_type,
+                    canonical_rxcui=canonical_rxcui,
+                    canonical_name=canonical_name,
+                    canonical_term_type=canonical_term_type,
+                    match_strategy=match_strategy,
+                    rxnorm_dataset_version=rxnorm_dataset_version,
+                    rxnorm_api_version=rxnorm_api_version,
                     lookup_status=lookup_status,
                 ),
                 dose=Dose(
