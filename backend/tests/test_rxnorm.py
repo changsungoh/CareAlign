@@ -1,8 +1,16 @@
+from __future__ import annotations
+
+from collections.abc import Callable
+from datetime import date
+from unittest.mock import AsyncMock
+
 import httpx
 import pytest
 
 from app.core.config import settings
-from app.services.rxnorm import RxNormClient
+from app.models.schemas import CareDocument
+from app.services import extraction
+from app.services.rxnorm import RxNormClient, RxNormResolution
 
 
 class FakeResponse:
@@ -17,8 +25,11 @@ class FakeResponse:
 
 
 class FakeClient:
+    responder: Callable[[str, dict | None], dict]
+    calls: list[tuple[str, dict | None]]
+
     def __init__(self, *args, **kwargs) -> None:
-        pass
+        self.calls = FakeClient.calls
 
     async def __aenter__(self):
         return self
@@ -26,22 +37,201 @@ class FakeClient:
     async def __aexit__(self, *args):
         return None
 
-    async def get(self, url: str) -> FakeResponse:
-        if url.endswith("generic.json"):
-            return FakeResponse({"minConceptGroup": {"minConcept": [{"rxcui": "860975"}]}})
-        if url.endswith("properties.json"):
-            return FakeResponse({"properties": {"name": "metoprolol succinate", "tty": "SCD"}})
-        return FakeResponse({"idGroup": {"rxnormId": ["866429"]}})
+    async def get(self, url: str, params: dict | None = None) -> FakeResponse:
+        self.calls.append((url, params))
+        return FakeResponse(FakeClient.responder(url, params))
+
+
+def install_fake(monkeypatch, responder: Callable[[str, dict | None], dict]) -> list:
+    calls: list[tuple[str, dict | None]] = []
+    FakeClient.responder = responder
+    FakeClient.calls = calls
+    monkeypatch.setattr(settings, "rxnorm_enabled", True)
+    monkeypatch.setattr(httpx, "AsyncClient", FakeClient)
+    return calls
+
+
+def version_payload() -> dict:
+    return {"version": "01-Sep-2026", "apiVersion": "3.1.0"}
 
 
 @pytest.mark.asyncio
-async def test_rxnorm_uses_generic_product_as_canonical(monkeypatch) -> None:
-    monkeypatch.setattr(settings, "rxnorm_enabled", True)
-    monkeypatch.setattr(httpx, "AsyncClient", FakeClient)
+async def test_exact_branded_product_uses_generic_product_as_canonical(monkeypatch) -> None:
+    def responder(url: str, params: dict | None) -> dict:
+        if url.endswith("rxcui.json"):
+            assert params == {"name": "Toprol XL", "search": 0, "allsrc": 0}
+            return {"idGroup": {"rxnormId": ["866429"]}}
+        if url.endswith("/866429/properties.json"):
+            return {"properties": {"name": "Toprol XL 25 MG", "tty": "SBD"}}
+        if url.endswith("/866429/generic.json"):
+            return {"minConceptGroup": {"minConcept": [{"rxcui": "860975"}]}}
+        if url.endswith("/860975/properties.json"):
+            return {"properties": {"name": "metoprolol succinate 25 MG", "tty": "SCD"}}
+        if url.endswith("version.json"):
+            return version_payload()
+        raise AssertionError(url)
+
+    install_fake(monkeypatch, responder)
     result = await RxNormClient().resolve("Toprol XL")
     assert result.normalized_id == "rxnorm:860975"
     assert result.rxcui == "866429"
-    assert result.status == "resolved"
+    assert result.canonical_rxcui == "860975"
+    assert result.term_type == "SBD"
+    assert result.canonical_term_type == "SCD"
+    assert result.status == "resolved_exact_generic_product"
+    assert result.dataset_version == "01-Sep-2026"
+
+
+@pytest.mark.asyncio
+async def test_exact_ingredient_does_not_call_generic_endpoint(monkeypatch) -> None:
+    def responder(url: str, params: dict | None) -> dict:
+        if url.endswith("rxcui.json"):
+            return {"idGroup": {"rxnormId": ["6918"]}}
+        if url.endswith("/6918/properties.json"):
+            return {"properties": {"name": "metoprolol", "tty": "IN"}}
+        if url.endswith("version.json"):
+            return version_payload()
+        raise AssertionError(url)
+
+    calls = install_fake(monkeypatch, responder)
+    result = await RxNormClient().resolve("metoprolol")
+    assert result.normalized_id == "rxnorm:6918"
+    assert result.status == "resolved_exact"
+    assert not any(url.endswith("generic.json") for url, _ in calls)
+
+
+@pytest.mark.asyncio
+async def test_normalized_match_is_review_candidate_not_identity(monkeypatch) -> None:
+    def responder(url: str, params: dict | None) -> dict:
+        if url.endswith("rxcui.json") and params and params["search"] == 0:
+            return {"idGroup": {}}
+        if url.endswith("rxcui.json") and params and params["search"] == 1:
+            return {"idGroup": {"rxnormId": ["6918"]}}
+        if url.endswith("/6918/properties.json"):
+            return {"properties": {"name": "metoprolol", "tty": "IN"}}
+        if url.endswith("version.json"):
+            return version_payload()
+        raise AssertionError(url)
+
+    install_fake(monkeypatch, responder)
+    result = await RxNormClient().resolve("metoprolol mystery form")
+    assert result.normalized_id is None
+    assert result.rxcui == "6918"
+    assert result.match_strategy == "normalized"
+    assert result.status == "normalized_candidate_needs_review"
+
+
+@pytest.mark.asyncio
+async def test_multiple_exact_matches_fail_closed(monkeypatch) -> None:
+    def responder(url: str, params: dict | None) -> dict:
+        return {"idGroup": {"rxnormId": ["1", "2"]}}
+
+    calls = install_fake(monkeypatch, responder)
+    result = await RxNormClient().resolve("ambiguous")
+    assert result.normalized_id is None
+    assert result.status == "ambiguous_exact"
+    assert len(calls) == 1
+
+
+@pytest.mark.asyncio
+async def test_unsupported_component_term_type_is_not_identity(monkeypatch) -> None:
+    def responder(url: str, params: dict | None) -> dict:
+        if url.endswith("rxcui.json"):
+            return {"idGroup": {"rxnormId": ["123"]}}
+        if url.endswith("/123/properties.json"):
+            return {"properties": {"name": "component only", "tty": "SCDC"}}
+        if url.endswith("version.json"):
+            return version_payload()
+        raise AssertionError(url)
+
+    install_fake(monkeypatch, responder)
+    result = await RxNormClient().resolve("component only")
+    assert result.normalized_id is None
+    assert result.status == "unsupported_term_type"
+
+
+@pytest.mark.asyncio
+async def test_version_is_cached_for_client_lifetime(monkeypatch) -> None:
+    identifiers = iter(["1", "2"])
+
+    def responder(url: str, params: dict | None) -> dict:
+        if url.endswith("rxcui.json"):
+            return {"idGroup": {"rxnormId": [next(identifiers)]}}
+        if url.endswith("/1/properties.json"):
+            return {"properties": {"name": "first", "tty": "IN"}}
+        if url.endswith("/2/properties.json"):
+            return {"properties": {"name": "second", "tty": "PIN"}}
+        if url.endswith("version.json"):
+            return version_payload()
+        raise AssertionError(url)
+
+    calls = install_fake(monkeypatch, responder)
+    client = RxNormClient()
+    await client.resolve("first")
+    await client.resolve("second")
+    assert sum(url.endswith("version.json") for url, _ in calls) == 1
+
+
+@pytest.mark.asyncio
+async def test_extraction_preserves_rxnorm_provenance(monkeypatch) -> None:
+    source = "Continue mysterybrand 5 mg by mouth once a day."
+    monkeypatch.setattr(
+        extraction,
+        "_demo_extract",
+        lambda _document: [
+            {
+                "raw_name": "mysterybrand",
+                "dose": "5",
+                "unit": "mg",
+                "pattern_type": "fixed",
+                "times_per_day": 1,
+                "interval_hours": None,
+                "raw_frequency": "once a day",
+                "timing": [],
+                "route": "by mouth",
+                "duration": None,
+                "action": "continue",
+                "warning": None,
+                "evidence_span": source,
+            }
+        ],
+    )
+    monkeypatch.setattr(
+        extraction.rxnorm_client,
+        "resolve",
+        AsyncMock(
+            return_value=RxNormResolution(
+                normalized_id="rxnorm:200",
+                rxcui="100",
+                concept_name="Mystery Brand 5 MG Oral Tablet",
+                term_type="SBD",
+                canonical_rxcui="200",
+                canonical_name="mystery ingredient 5 MG Oral Tablet",
+                canonical_term_type="SCD",
+                match_strategy="exact",
+                dataset_version="01-Sep-2026",
+                api_version="3.1.0",
+                status="resolved_exact_generic_product",
+            )
+        ),
+    )
+    instructions = await extraction.extract_document(
+        CareDocument(
+            document_id="doc-1",
+            document_type="synthetic",
+            document_date=date(2026, 9, 1),
+            raw_text=source,
+        ),
+        demo_mode=True,
+    )
+    medication = instructions[0].medication
+    assert medication.normalized_id == "rxnorm:200"
+    assert medication.terminology == "rxnorm"
+    assert medication.rxcui == "100"
+    assert medication.canonical_rxcui == "200"
+    assert medication.canonical_term_type == "SCD"
+    assert medication.rxnorm_dataset_version == "01-Sep-2026"
+    assert medication.lookup_status == "resolved_exact_generic_product"
 
 
 @pytest.mark.asyncio
