@@ -21,9 +21,14 @@ test("synthetic comparison reaches source-linked clarification", async ({ page }
   }));
   await page.goto("/");
   await page.getByLabel(/I confirm this is synthetic data/).check();
-  await page.getByRole("button", { name: "Compare instructions" }).click();
-  await expect(page.getByRole("heading", { name: /1 potential difference/ })).toBeVisible();
+  await page.getByRole("button", { name: "Analyze care timeline" }).click();
+  await expect(page.getByRole("heading", { name: /1 difference still needs a response/ })).toBeVisible();
   await expect(page.getByText("Which instruction should I follow?")).toBeVisible();
+  await page.getByLabel(/Record care team response/).fill("Synthetic response: once daily.");
+  await page.getByRole("button", { name: "Save to this browser session" }).click();
+  await expect(page.getByRole("heading", { name: "Responses recorded for every difference" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "1 response recorded" })).toBeVisible();
+  await expect(page.getByText("User-entered · not verified by CareAlign", { exact: false })).toBeVisible();
 });
 
 test("timeline accepts up to five documents and allows removal", async ({ page }) => {
