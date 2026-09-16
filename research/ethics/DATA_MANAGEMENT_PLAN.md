@@ -1,7 +1,7 @@
 # Data management plan
 
-**Study ID:** CA-UX-001  
-**Version:** 0.1-draft  
+**Study ID:** CA-UX-001
+**Version:** 0.1-draft
 **Status:** Requires ethics/privacy confirmation before use
 
 ## Data-minimisation rule
@@ -94,4 +94,3 @@ participant-level exports.
 
 This plan is an operational draft, not a claim of PDPA compliance. The final controller,
 institutional systems, retention rule, and incident route require written confirmation.
-
