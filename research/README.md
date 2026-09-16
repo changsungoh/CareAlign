@@ -11,7 +11,7 @@ the responsible person, deviations, failures, and an immutable result or signed 
 |---|---|---|---|
 | RxNorm terminology | Exact-first resolver, fail-closed statuses, provenance fields, unit tests | Clinical review of identity policy and edge-case set | Reviewed policy, frozen test set, versioned results |
 | Clinical/regulatory | Intended use, claims matrix, risk register, US/Singapore questions | Qualified regulatory review | Signed determination memo per target jurisdiction |
-| User testing | Synthetic-only protocol, consent script, task guide, session log | NUS/appropriate ethics determination before recruitment | Determination ID, consent records, de-identified results |
+| User testing | Synthetic-only protocol, ethics request draft, participant sheet, data plan, recruitment materials | NUS/appropriate ethics determination before recruitment | Determination ID, consent records, de-identified results |
 | Independent medical review | Blinded review and adjudication protocol | Recruit independent qualified reviewers | Credential attestations, locked labels, adjudication report |
 
 ## Non-negotiable boundaries
@@ -24,6 +24,15 @@ the responsible person, deviations, failures, and an immutable result or signed 
 - Do not delete failed sessions, reviewer disagreements, protocol deviations, or excluded cases.
 
 ## Artifact map
+
+- [`EXECUTION_PLAN.md`](EXECUTION_PLAN.md): gated sequence from institutional determination to claims review.
+- [`EVIDENCE_REGISTER.csv`](EVIDENCE_REGISTER.csv): public-safe manifest template for versioned evidence.
+- [`ethics/ETHICS_DETERMINATION_REQUEST.md`](ethics/ETHICS_DETERMINATION_REQUEST.md): submission-ready study summary with fields requiring institutional completion.
+- [`ethics/DATA_MANAGEMENT_PLAN.md`](ethics/DATA_MANAGEMENT_PLAN.md): data inventory, separation, access, retention, and incident controls.
+- [`ethics/PARTICIPANT_INFORMATION_AND_CONSENT.md`](ethics/PARTICIPANT_INFORMATION_AND_CONSENT.md): participant-facing draft awaiting approval.
+- [`recruitment/USER_RECRUITMENT_NOTICE.md`](recruitment/USER_RECRUITMENT_NOTICE.md): synthetic-only recruitment language awaiting approval.
+- [`recruitment/SCREENING_FORM.md`](recruitment/SCREENING_FORM.md): minimal eligibility questions with no health-history collection.
+- [`recruitment/EXPERT_INVITATION.md`](recruitment/EXPERT_INVITATION.md): independent reviewer invitation and pre-send controls.
 
 - [`regulatory/INTENDED_USE.md`](regulatory/INTENDED_USE.md): frozen intended-use boundary.
 - [`regulatory/REGULATORY_REVIEW.md`](regulatory/REGULATORY_REVIEW.md): US/Singapore decision file.
