@@ -1,6 +1,6 @@
 # Eligibility screening form draft
 
-**Study ID:** CA-UX-001  
+**Study ID:** CA-UX-001
 **Do not deploy before ethics/privacy determination.**
 
 Collect the minimum information needed for eligibility and sampling. Do not ask for health history,
@@ -39,4 +39,3 @@ diagnoses, medication use, patient records, national identifiers, date of birth,
 No automatic rejection message should reveal sensitive inference. Use a neutral message: “Thank
 you for your interest. Based on the study's current eligibility criteria, we cannot schedule you for
 this round.”
-
