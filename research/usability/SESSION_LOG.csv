@@ -1,0 +1,2 @@
+session_id,cohort,protocol_version,build_sha,scenario_version,consent_record_id,started_at_utc,completed,withdrawn,technical_failure,task1_status,task2_status,task3_status,task4_status,task5_status,task6_status,task7_status,critical_misunderstanding_count,assistance_count,accessibility_barrier,severity_highest,protocol_deviation,notes_deidentified
+
