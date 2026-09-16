@@ -1,9 +1,9 @@
 # Ethics determination request draft
 
-**Study ID:** CA-UX-001  
-**Version:** 0.1-draft  
-**Date:** 2026-09-16  
-**Applicant:** OH CHANGSUNG, student researcher  
+**Study ID:** CA-UX-001
+**Version:** 0.1-draft
+**Date:** 2026-09-16
+**Applicant:** OH CHANGSUNG, student researcher
 **Status:** Not submitted; no recruitment or data collection is authorised
 
 > Complete every bracketed field, obtain the required supervisor role, and use the route confirmed by
@@ -147,4 +147,3 @@ published DERC contact. Questions may be sent to `irb@nus.edu.sg`.
 - [NUS DERC directory and student-research guidance](https://www.nus.edu.sg/research/irb/derc)
 - [NUS-IRB training requirements](https://www.nus.edu.sg/research/irb/resources/training)
 - [NUS iRIMS](https://www.nus.edu.sg/research/research-administration-and-shared-services/irims)
-

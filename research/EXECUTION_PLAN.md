@@ -1,8 +1,8 @@
 # External validation execution plan
 
-**Owner:** OH CHANGSUNG  
-**Version:** 1.0  
-**Date:** 2026-09-16  
+**Owner:** OH CHANGSUNG
+**Version:** 1.0
+**Date:** 2026-09-16
 **Current phase:** Gate 0 — institutional route and documents
 
 The work now moves from internally authored engineering evidence to external review. A gate may
@@ -65,4 +65,3 @@ de-identified aggregates, and approved reports.
   required ethics approval before use.
 - If a critical misunderstanding or harmful wording is found, pause the affected flow, file an
   issue, remediate, and retest before making a stronger claim.
-

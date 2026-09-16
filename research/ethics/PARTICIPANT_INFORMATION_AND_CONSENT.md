@@ -1,8 +1,8 @@
 # Participant information and consent draft
 
-**Study:** Understanding a synthetic medication-instruction comparison prototype  
-**Study ID:** CA-UX-001  
-**Version:** 0.1-draft  
+**Study:** Understanding a synthetic medication-instruction comparison prototype
+**Study ID:** CA-UX-001
+**Version:** 0.1-draft
 **Status:** Do not distribute until approved or formally determined
 
 ## Invitation
@@ -60,7 +60,7 @@ your individual contribution.
 
 ## Payment, costs, and conflicts
 
-Payment/reimbursement: **[STATE NONE OR INSERT APPROVED AMOUNT AND METHOD]**.  
+Payment/reimbursement: **[STATE NONE OR INSERT APPROVED AMOUNT AND METHOD]**.
 Known conflicts or commercial interests: **None declared; update before distribution.**
 
 ## Questions or concerns
@@ -80,10 +80,9 @@ Please confirm each statement:
 - [ ] I understand that participation is voluntary and I can stop as described above.
 - [ ] I am at least 18 years old and agree to participate.
 
-Participant name: **[COLLECT ONLY IN APPROVED CONSENT SYSTEM]**  
-Signature/approved electronic consent: **[FIELD]**  
+Participant name: **[COLLECT ONLY IN APPROVED CONSENT SYSTEM]**
+Signature/approved electronic consent: **[FIELD]**
 Date: **[FIELD]**
 
-Person obtaining consent: **[FIELD]**  
+Person obtaining consent: **[FIELD]**
 Date: **[FIELD]**
-
