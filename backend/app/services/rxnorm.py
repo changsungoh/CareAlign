@@ -7,7 +7,6 @@ import httpx
 
 from app.core.config import settings
 
-
 # Complete ingredient or product concepts that preserve a usable identity.
 # Component/group TTYs are excluded because they can omit strength or dose form.
 SUPPORTED_EXACT_TERM_TYPES = frozenset({"IN", "PIN", "MIN", "SCD", "SBD", "GPCK", "BPCK"})
@@ -149,12 +148,8 @@ class RxNormClient:
         values = response.json().get("idGroup", {}).get("rxnormId") or []
         return [str(value) for value in values]
 
-    async def _properties(
-        self, client: httpx.AsyncClient, rxcui: str
-    ) -> tuple[str, str] | None:
-        response = await client.get(
-            f"{settings.rxnorm_base_url}/rxcui/{rxcui}/properties.json"
-        )
+    async def _properties(self, client: httpx.AsyncClient, rxcui: str) -> tuple[str, str] | None:
+        response = await client.get(f"{settings.rxnorm_base_url}/rxcui/{rxcui}/properties.json")
         response.raise_for_status()
         values = response.json().get("properties") or {}
         name = values.get("name")
@@ -163,9 +158,7 @@ class RxNormClient:
             return None
         return name, term_type
 
-    async def _generic_product_ids(
-        self, client: httpx.AsyncClient, rxcui: str
-    ) -> list[str]:
+    async def _generic_product_ids(self, client: httpx.AsyncClient, rxcui: str) -> list[str]:
         response = await client.get(f"{settings.rxnorm_base_url}/rxcui/{rxcui}/generic.json")
         response.raise_for_status()
         values = response.json().get("minConceptGroup", {}).get("minConcept") or []

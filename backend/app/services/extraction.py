@@ -95,7 +95,7 @@ async def _call_anthropic(
     # constructing the request without ever logging the secret.
     api_key = "".join(settings.anthropic_api_key.split())
     if api_key.startswith("ANTHROPIC_API_KEY="):
-        api_key = api_key.removeprefix("ANTHROPIC_API_KEY=").strip('"\'')
+        api_key = api_key.removeprefix("ANTHROPIC_API_KEY=").strip("\"'")
     if not api_key:
         raise RuntimeError("Live AI is unavailable because ANTHROPIC_API_KEY is not configured.")
     payload = {
@@ -241,6 +241,10 @@ async def extract_document(
             if rxnorm.normalized_id:
                 identity["normalized_id"] = rxnorm.normalized_id
                 terminology = "rxnorm"
+            elif rxnorm.rxcui:
+                terminology = "rxnorm_candidate"
+            else:
+                terminology = "unresolved"
         route_raw = item.get("route")
         route_normalized = normalize_route(route_raw) if route_raw else None
         status = ValidationStatus.VALIDATED

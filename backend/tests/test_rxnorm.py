@@ -1,12 +1,16 @@
 from __future__ import annotations
 
 from collections.abc import Callable
+from datetime import date
+from unittest.mock import AsyncMock
 
 import httpx
 import pytest
 
 from app.core.config import settings
-from app.services.rxnorm import RxNormClient
+from app.models.schemas import CareDocument
+from app.services import extraction
+from app.services.rxnorm import RxNormClient, RxNormResolution
 
 
 class FakeResponse:
@@ -48,7 +52,7 @@ def install_fake(monkeypatch, responder: Callable[[str, dict | None], dict]) -> 
 
 
 def version_payload() -> dict:
-    return {"version": {"version": "01-Sep-2026", "apiVersion": "3.1.0"}}
+    return {"version": "01-Sep-2026", "apiVersion": "3.1.0"}
 
 
 @pytest.mark.asyncio
@@ -166,6 +170,68 @@ async def test_version_is_cached_for_client_lifetime(monkeypatch) -> None:
     await client.resolve("first")
     await client.resolve("second")
     assert sum(url.endswith("version.json") for url, _ in calls) == 1
+
+
+@pytest.mark.asyncio
+async def test_extraction_preserves_rxnorm_provenance(monkeypatch) -> None:
+    source = "Continue mysterybrand 5 mg by mouth once a day."
+    monkeypatch.setattr(
+        extraction,
+        "_demo_extract",
+        lambda _document: [
+            {
+                "raw_name": "mysterybrand",
+                "dose": "5",
+                "unit": "mg",
+                "pattern_type": "fixed",
+                "times_per_day": 1,
+                "interval_hours": None,
+                "raw_frequency": "once a day",
+                "timing": [],
+                "route": "by mouth",
+                "duration": None,
+                "action": "continue",
+                "warning": None,
+                "evidence_span": source,
+            }
+        ],
+    )
+    monkeypatch.setattr(
+        extraction.rxnorm_client,
+        "resolve",
+        AsyncMock(
+            return_value=RxNormResolution(
+                normalized_id="rxnorm:200",
+                rxcui="100",
+                concept_name="Mystery Brand 5 MG Oral Tablet",
+                term_type="SBD",
+                canonical_rxcui="200",
+                canonical_name="mystery ingredient 5 MG Oral Tablet",
+                canonical_term_type="SCD",
+                match_strategy="exact",
+                dataset_version="01-Sep-2026",
+                api_version="3.1.0",
+                status="resolved_exact_generic_product",
+            )
+        ),
+    )
+    instructions = await extraction.extract_document(
+        CareDocument(
+            document_id="doc-1",
+            document_type="synthetic",
+            document_date=date(2026, 9, 1),
+            raw_text=source,
+        ),
+        demo_mode=True,
+    )
+    medication = instructions[0].medication
+    assert medication.normalized_id == "rxnorm:200"
+    assert medication.terminology == "rxnorm"
+    assert medication.rxcui == "100"
+    assert medication.canonical_rxcui == "200"
+    assert medication.canonical_term_type == "SCD"
+    assert medication.rxnorm_dataset_version == "01-Sep-2026"
+    assert medication.lookup_status == "resolved_exact_generic_product"
 
 
 @pytest.mark.asyncio

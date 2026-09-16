@@ -1,0 +1,13 @@
+case_id,input_a,input_b,risk_focus,required_engineering_disposition,clinical_reference_status
+RXE-001,metoprolol tartrate,metoprolol succinate,salt and release-form distinction,Do not merge by normalized search,pending_independent_review
+RXE-002,Toprol XL,metoprolol succinate extended-release,brand to unbranded product,Accept only unique exact product-to-generic relationship,pending_independent_review
+RXE-003,Lopressor,metoprolol tartrate,brand to salt-specific product,Accept only unique exact product-to-generic relationship,pending_independent_review
+RXE-004,metformin immediate-release,metformin extended-release,dose-form distinction,Do not collapse dose form,pending_independent_review
+RXE-005,amoxicillin and clavulanate,amoxicillin,multi-ingredient distinction,Do not collapse ingredient set,pending_independent_review
+RXE-006,insulin glargine U-100,insulin glargine U-300,strength distinction,Do not collapse strength,pending_independent_review
+RXE-007,azithromycin branded product,azithromycin matching generic product,brand to generic product,Require exact supported product TTY and one generic target,pending_independent_review
+RXE-008,misspelled medication name,correct medication name,normalized or approximate candidate,Return review candidate without comparison identity,pending_independent_review
+RXE-009,unknown local brand,ingredient name,no terminology match,Return not found or review,pending_independent_review
+RXE-010,ambiguous exact name,ambiguous exact name,multiple active RxCUIs,Return ambiguous exact without comparison identity,pending_independent_review
+RXE-011,component-only RxNorm concept,complete product,unsupported component TTY,Return unsupported term type,pending_independent_review
+RXE-012,product with multiple generic links,product with multiple generic links,ambiguous generic mapping,Return review without comparison identity,pending_independent_review

@@ -34,7 +34,7 @@ the responsible person, deviations, failures, and an immutable result or signed 
 - [`usability/SESSION_LOG.csv`](usability/SESSION_LOG.csv): one row per attempted session.
 - [`usability/ANALYSIS_TEMPLATE.md`](usability/ANALYSIS_TEMPLATE.md): predeclared reporting structure.
 - [`clinical/EXPERT_REVIEW_PROTOCOL.md`](clinical/EXPERT_REVIEW_PROTOCOL.md): independent blinded review.
+- [`clinical/rxnorm-edge-cases-v1.csv`](clinical/rxnorm-edge-cases-v1.csv): terminology safety set awaiting expert labels.
 - [`clinical/REVIEW_FORM.csv`](clinical/REVIEW_FORM.csv): one reviewer judgment per row.
 - [`clinical/ADJUDICATION_LOG.csv`](clinical/ADJUDICATION_LOG.csv): disagreement resolution trail.
 - [`clinical/REVIEWER_ATTESTATION.md`](clinical/REVIEWER_ATTESTATION.md): qualifications and independence.
-

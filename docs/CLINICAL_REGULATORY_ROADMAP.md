@@ -29,6 +29,11 @@ question, time burden, false-alert fatigue, subgroup performance, and any delaye
 care. Labels require at least two independent qualified reviewers with adjudication; the current
 synthetic author-reviewed dataset is not a clinical benchmark.
 
+The executable independent-review protocol, reviewer attestation, review form and adjudication log
+are maintained under [`research/clinical/`](../research/clinical/). A review is not “independent” if
+the reviewer authored the cases, labels, rules, prompts, or implementation, or saw the expected
+answers before locking the first pass.
+
 ## Formative usability protocol
 
 Stage 1 uses fictional records only. Recruit separate patient/caregiver and clinician-facing groups,
@@ -37,7 +42,8 @@ required ethics determination before recruitment and accessible informed consent
 session. A moderator asks each participant to complete four fixed tasks: identify a flagged source
 difference, explain that CareAlign has not chosen the correct instruction, export a clarification
 question, and complete or skip teach-back. Collect task completion, time on task, critical
-misinterpretations, System Usability Scale, perceived workload, and open-ended feedback. Do not ask
+misinterpretations, a single task-ease rating, assistance, accessibility barriers, and open-ended
+feedback. Do not ask
 participants to disclose their medications or history. Stop the session if a participant believes
 the prototype is prescribing, attempts to act on a fictional result, becomes distressed, or exposes
 personal health information.
@@ -46,6 +52,10 @@ Clinician review uses the same fictional cases and separately asks whether each 
 faithful, clinically reasonable to clarify, and phrased without implying a treatment decision. The
 protocol and analysis plan must be frozen before observation; usability findings cannot be reported
 as evidence of clinical safety or effectiveness.
+
+The protocol, consent/moderator script, session log, and predeclared analysis template are in
+[`research/usability/`](../research/usability/). Recruitment is prohibited until the responsible
+institution supplies a written ethics/privacy determination.
 
 ## Prospective safety endpoints
 
@@ -81,6 +91,12 @@ current final Clinical Decision Support guidance is dated January 2026:
 [FDA CDS guidance](https://www.fda.gov/regulatory-information/search-fda-guidance-documents/clinical-decision-support-software).
 Until counsel and regulators determine otherwise, all product language must remain conservative and
 must not claim that CareAlign is exempt, non-device, safe, effective, or cleared.
+
+The working intended-use statement, claims matrix, US/Singapore review questions, and safety-risk
+register are in [`research/regulatory/`](../research/regulatory/). HSA's 21 July 2025 update expressly
+addresses SaMD risk classification and qualification of CDSS, so Singapore classification must be
+decided independently from the US analysis:
+[HSA SaMD/CDSS update](https://www.hsa.gov.sg/announcements/update-for-guidelines-on-risk-classification-of-samd-and-qualification-of-clinical-decision-support-software--cdss-/).
 
 ## Accessibility and health literacy
 

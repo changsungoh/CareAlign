@@ -33,6 +33,11 @@ salt, formulation, strength/dose form, multi-ingredient, package, misspelling, a
 and unsupported-term-type cases. Unsupported-pattern, security, teach-back, and resilience cases
 remain engineering endpoints unless separately assigned to an appropriate reviewer.
 
+The initial 12-case terminology set is
+[`rxnorm-edge-cases-v1.csv`](rxnorm-edge-cases-v1.csv). Its clinical labels intentionally remain
+`pending_independent_review`; the engineering disposition is a fail-closed requirement, not an
+expert determination of interchangeability.
+
 ## First-pass questions
 
 For each transition, independently record:
@@ -71,4 +76,3 @@ clinical safety threshold.
 - Do not tune the product on the final locked test set; create a separate development set.
 - Publish reviewer funding/conflicts and whether they saw the system before their first pass.
 - Call the result “independent synthetic expert review,” not clinical validation of real patients.
-
