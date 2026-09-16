@@ -1,6 +1,6 @@
 # Independent medical expert invitation draft
 
-**Review ID:** CA-CLIN-001  
+**Review ID:** CA-CLIN-001
 **Status:** Do not send until scope, compensation, conflicts, and data handling are final
 
 ## Invitation email
@@ -33,7 +33,7 @@ not send licence documents by ordinary email; a secure verification route will b
 
 Thank you,
 
-OH CHANGSUNG  
+OH CHANGSUNG
 **[NUS/approved contact]**
 
 ## Pre-send controls
@@ -44,4 +44,3 @@ OH CHANGSUNG
 - Execute conflict-of-interest and confidentiality terms before releasing the cases.
 - Give reviewers stable IDs; keep their identities separate from blind labels.
 - Never describe invitation acceptance as endorsement or validation.
-
