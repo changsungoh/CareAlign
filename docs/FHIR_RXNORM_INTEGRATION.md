@@ -7,16 +7,37 @@ product endpoints. NLM documents the API as a web service for the RxNorm dataset
 `/rxcui?name=...` for string lookup:
 [NLM RxNorm API](https://lhncbc.nlm.nih.gov/RxNav/APIs/RxNormAPIs.html).
 
-Safety rules:
+Safety rules implemented in `backend/app/services/rxnorm.py`:
 
 1. The curated map runs first because it explicitly distinguishes the salt/form demo cases.
 2. RxNorm is disabled by default and is never required for the bundled demo.
-3. Exactly one RxCUI must be returned; zero or multiple results are unresolved.
-4. A generic product link may supply the comparison identity while the original RxCUI remains in
-   provenance.
-5. Timeout, malformed response, ambiguous match, or missing relationship returns review—not a guess.
-6. RxNorm identity is terminology normalization, not evidence that two clinical orders are
+3. Active-concept exact search (`search=0`, `allsrc=0`) runs first. Exactly one RxCUI is required.
+4. When exact search fails, normalized search is used only to expose a
+   `normalized_candidate_needs_review`; it never supplies `normalized_id`. NLM documents that
+   normalized search can ignore punctuation, word order, suffixes, and salt/form words, so automatic
+   acceptance would be unsafe for this use case.
+5. Only complete ingredient/product TTYs (`IN`, `PIN`, `MIN`, `SCD`, `SBD`, `GPCK`, `BPCK`) are
+   accepted. Component/group TTYs remain review because they can omit strength or dose form.
+6. The generic-product endpoint is called only for documented product TTYs. It may map an SBD to one
+   SCD or a BPCK to one GPCK while retaining the source RxCUI; zero/multiple/unsupported relationships
+   fail closed.
+7. The result preserves source and canonical names, RxCUIs, TTYs, match strategy, lookup status,
+   RxNorm dataset version, and API version.
+8. Timeout, malformed response, ambiguous match, unsupported TTY, or missing relationship returns
+   review—not a guess.
+9. RxNorm identity is terminology normalization, not evidence that two clinical orders are
    therapeutically interchangeable.
+
+Relevant NLM endpoint specifications:
+
+- `findRxcuiByString`: https://lhncbc.nlm.nih.gov/RxNav/APIs/api-RxNorm.findRxcuiByString.html
+- `getGenericProduct`: https://lhncbc.nlm.nih.gov/RxNav/APIs/api-RxNorm.getGenericProduct.html
+- `getRxConceptProperties`: https://lhncbc.nlm.nih.gov/RxNav/APIs/api-RxNorm.getRxConceptProperties.html
+- `getRxNormVersion`: https://lhncbc.nlm.nih.gov/RxNav/APIs/api-RxNorm.getRxNormVersion.html
+
+RxNorm remains disabled by default until the identity policy and edge-case set receive the
+independent clinical review defined in
+[`research/clinical/EXPERT_REVIEW_PROTOCOL.md`](../research/clinical/EXPERT_REVIEW_PROTOCOL.md).
 
 ## Future FHIR import
 
