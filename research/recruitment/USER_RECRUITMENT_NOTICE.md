@@ -29,4 +29,3 @@ Before use, insert the ethics/determination identifier, approved recruitment cha
 institution, investigator/supervisor contacts, inclusion/exclusion details, compensation, location,
 recording status, and version/date. Use only the exact approved wording. Do not use urgency,
 therapeutic benefit, “clinical validation,” “medical safety,” or diagnostic claims.
-
