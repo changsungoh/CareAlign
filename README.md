@@ -28,14 +28,15 @@ The repository now contains the end-to-end hackathon MVP:
 - two-to-five-document longitudinal comparison with required unique dates and input limits;
 - structured LLM extraction with a prompt-injection boundary;
 - exact/fuzzy evidence-span verification and strict schemas;
-- curated medication identity plus optional RxNorm resolution, salt/form, route and mass-unit normalization;
+- curated medication identity plus optional exact-first RxNorm resolution with salt/form-safe review
+  states, version provenance, route and mass-unit normalization;
 - deterministic dose, frequency, route, action and possible-omission checks;
 - source-linked clarification questions with copy, print and download actions;
 - user-only resolution notes in browser `sessionStorage`;
 - deterministic teach-back checklists that exclude unresolved instructions;
 - a visibly labelled synthetic Demo Mode—never an invisible AI fallback;
 - rate limits, daily budget guard, safe failure states, accessibility controls;
-- 90 versioned synthetic evaluation cases, 33 backend tests and Playwright E2E.
+- 90 versioned synthetic evaluation cases, backend unit/integration tests and Playwright E2E.
 
 ## Privacy boundary
 
@@ -56,6 +57,7 @@ deployment topology. Implementation and research extensions are specified in:
 
 - [FHIR and RxNorm integration](docs/FHIR_RXNORM_INTEGRATION.md)
 - [Clinical, privacy, and regulatory roadmap](docs/CLINICAL_REGULATORY_ROADMAP.md)
+- [Validation program and execution artifacts](research/README.md)
 - [Deployment runbook](docs/DEPLOYMENT_RUNBOOK.md)
 - [Judge demo script](docs/DEMO_SCRIPT.md)
 - [Devpost submission draft](docs/DEVPOST_SUBMISSION.md)
@@ -161,8 +163,10 @@ this process can reduce recall bias but is not independent external review.
 - A failed or uncertain analysis must not be displayed as `no conflict`.
 - Extracted evidence must be traceable to the supplied source text.
 - Medication identity support will initially use a deliberately limited,
-  curated alias, salt, and formulation map; optional RxNorm lookup remains a terminology aid rather
-  than proof of clinical interchangeability.
+  curated alias, salt, and formulation map. Optional RxNorm lookup is exact-first, preserves source
+  and canonical RxCUIs plus dataset/API versions, and never promotes a normalized-search candidate
+  to a comparison identity. It remains a terminology aid rather than proof of clinical
+  interchangeability.
 - PRN, conditional, taper, range, and other complex dosing patterns are preserved as source text
   and routed to review. Future work may separately extract PRN maximum dose/frequency, conditional
   thresholds, and taper-phase context; the MVP does not compare them.
@@ -183,6 +187,15 @@ this process can reduce recall bias but is not independent external review.
 Designed and implemented the product strategy, healthcare research, system architecture,
 structured AI pipeline, deterministic conflict engine, frontend workflow, accessibility,
 evaluation framework, documentation, and deployment integration.
+
+## Validation program
+
+The next phase is tracked as four evidence-producing workstreams: conservative RxNorm terminology,
+US/Singapore clinical-regulatory review, synthetic-only formative usability testing, and independent
+medical-expert review. Protocols, data forms, claims controls and the initial risk register are in
+[`research/`](research/README.md). They are intentionally marked protocol-ready—not completed.
+Recruitment is blocked pending the appropriate written ethics/privacy determination, and clinical or
+regulatory claims are blocked pending qualified external review.
 
 ## Evidence
 
