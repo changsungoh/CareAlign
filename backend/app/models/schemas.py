@@ -53,6 +53,13 @@ class MedicationIdentity(StrictModel):
     terminology: str = "curated"
     rxcui: str | None = None
     concept_name: str | None = None
+    term_type: str | None = None
+    canonical_rxcui: str | None = None
+    canonical_name: str | None = None
+    canonical_term_type: str | None = None
+    match_strategy: str | None = None
+    rxnorm_dataset_version: str | None = None
+    rxnorm_api_version: str | None = None
     lookup_status: str = "not_requested"
 
 
