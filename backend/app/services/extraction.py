@@ -19,6 +19,7 @@ from app.models.schemas import (
 )
 from app.services.evidence import verify_evidence
 from app.services.normalization import normalize_medication, normalize_route
+from app.services.provider_guard import provider_circuit
 from app.services.rxnorm import rxnorm_client
 
 SYSTEM_PROMPT = """You extract medication instructions from synthetic care documents.
@@ -111,20 +112,27 @@ async def _call_anthropic(
         "anthropic-version": "2023-06-01",
         "content-type": "application/json",
     }
-    async with httpx.AsyncClient(timeout=35) as client:
-        response = await client.post(
-            "https://api.anthropic.com/v1/messages", json=payload, headers=headers
-        )
-        response.raise_for_status()
-    body = response.json()
-    if usage_callback is not None:
-        usage_callback(body.get("usage", {}))
-    if body.get("stop_reason") in {"refusal", "max_tokens"}:
-        raise RuntimeError(f"Structured extraction stopped: {body['stop_reason']}")
-    text = body["content"][0]["text"].strip()
-    if text.startswith("```"):
-        text = re.sub(r"^```(?:json)?|```$", "", text, flags=re.MULTILINE).strip()
-    return json.loads(text)["instructions"]
+    provider_circuit.before_call()
+    try:
+        async with httpx.AsyncClient(timeout=35) as client:
+            response = await client.post(
+                "https://api.anthropic.com/v1/messages", json=payload, headers=headers
+            )
+            response.raise_for_status()
+        body = response.json()
+        if usage_callback is not None:
+            usage_callback(body.get("usage", {}))
+        if body.get("stop_reason") in {"refusal", "max_tokens"}:
+            raise RuntimeError(f"Structured extraction stopped: {body['stop_reason']}")
+        text = body["content"][0]["text"].strip()
+        if text.startswith("```"):
+            text = re.sub(r"^```(?:json)?|```$", "", text, flags=re.MULTILINE).strip()
+        instructions = json.loads(text)["instructions"]
+    except Exception:
+        provider_circuit.record_failure()
+        raise
+    provider_circuit.record_success()
+    return instructions
 
 
 def _demo_extract(document: CareDocument) -> list[dict]:
