@@ -35,8 +35,10 @@ The repository now contains the end-to-end hackathon MVP:
 - user-only resolution notes in browser `sessionStorage`;
 - deterministic teach-back checklists that exclude unresolved instructions;
 - a visibly labelled synthetic Demo Mode—never an invisible AI fallback;
-- rate limits, daily budget guard, safe failure states, accessibility controls;
+- request-correlated structured logs, provider circuit breaker, separated rate/budget guards,
+  safe failure states, accessibility controls;
 - 90 versioned synthetic evaluation cases, backend unit/integration tests and Playwright E2E.
+- SHA-256 release manifest for safety-critical prompt, rules, schemas and evaluation artifacts.
 
 ## Privacy boundary
 
@@ -77,6 +79,7 @@ The API is available at `http://localhost:8000`. Check:
 
 ```bash
 curl http://localhost:8000/api/health
+curl http://localhost:8000/api/readiness
 curl http://localhost:8000/api/version
 ```
 
@@ -108,11 +111,19 @@ Run the browser flow with `npm run test:e2e` after `npx playwright install chrom
 | Endpoint | Purpose |
 |---|---|
 | `GET /api/health` | Deployment health check |
+| `GET /api/readiness` | Provider configuration and circuit-breaker readiness |
 | `GET /api/version` | Model/prompt/rules/dataset traceability |
 | `POST /api/analyze` | Extract and deterministically compare 2–5 ordered documents |
 | `POST /api/teach-back` | Compare a paraphrase to source-derived, non-conflicted checklist items |
 
 The API is stateless. It does not offer a case retrieval endpoint and does not persist user input.
+Successful analysis responses include deployment revision, request ID, provider-call and token
+counts, and elapsed time. The API echoes the correlation value in `X-Request-ID`; invalid client
+values are replaced server-side. No raw document text or provider response body is written to the
+operational log.
+
+Before release, run `python scripts/release_manifest.py --verify`. CI rejects undeclared changes to
+the safety-critical files enumerated in `release-manifest.json`.
 
 ## Why this differs from existing reconciliation tools
 
