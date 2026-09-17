@@ -227,9 +227,11 @@ async def extract_document(
         rxcui = None
         concept_name = None
         term_type = None
+        source_suppress = None
         canonical_rxcui = None
         canonical_name = None
         canonical_term_type = None
+        canonical_suppress = None
         match_strategy = None
         rxnorm_dataset_version = None
         rxnorm_api_version = None
@@ -240,9 +242,11 @@ async def extract_document(
             rxcui = rxnorm.rxcui
             concept_name = rxnorm.concept_name
             term_type = rxnorm.term_type
+            source_suppress = rxnorm.source_suppress
             canonical_rxcui = rxnorm.canonical_rxcui
             canonical_name = rxnorm.canonical_name
             canonical_term_type = rxnorm.canonical_term_type
+            canonical_suppress = rxnorm.canonical_suppress
             match_strategy = rxnorm.match_strategy
             rxnorm_dataset_version = rxnorm.dataset_version
             rxnorm_api_version = rxnorm.api_version
@@ -278,9 +282,11 @@ async def extract_document(
                     rxcui=rxcui,
                     concept_name=concept_name,
                     term_type=term_type,
+                    source_suppress=source_suppress,
                     canonical_rxcui=canonical_rxcui,
                     canonical_name=canonical_name,
                     canonical_term_type=canonical_term_type,
+                    canonical_suppress=canonical_suppress,
                     match_strategy=match_strategy,
                     rxnorm_dataset_version=rxnorm_dataset_version,
                     rxnorm_api_version=rxnorm_api_version,

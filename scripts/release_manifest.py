@@ -22,6 +22,9 @@ ARTIFACTS = (
     "backend/app/services/teachback.py",
     "evaluation/cases/synthetic-v1.jsonl",
     "evaluation/schema/case.schema.json",
+    "evaluation/evaluate_rxnorm.py",
+    "evaluation/rxnorm/cases-v1.json",
+    "research/clinical/rxnorm-edge-cases-v2.csv",
 )
 
 
@@ -45,6 +48,7 @@ def current_manifest() -> dict:
         "prompt_version": config_version("prompt_version"),
         "rules_version": config_version("rules_version"),
         "dataset_version": config_version("dataset_version"),
+        "terminology_policy_version": config_version("terminology_policy_version"),
         "artifacts": {relative: sha256(ROOT / relative) for relative in ARTIFACTS},
     }
 

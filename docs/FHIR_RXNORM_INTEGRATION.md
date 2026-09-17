@@ -21,12 +21,23 @@ Safety rules implemented in `backend/app/services/rxnorm.py`:
 6. The generic-product endpoint is called only for documented product TTYs. It may map an SBD to one
    SCD or a BPCK to one GPCK while retaining the source RxCUI; zero/multiple/unsupported relationships
    fail closed.
-7. The result preserves source and canonical names, RxCUIs, TTYs, match strategy, lookup status,
-   RxNorm dataset version, and API version.
-8. Timeout, malformed response, ambiguous match, unsupported TTY, or missing relationship returns
+7. Both source and canonical concepts must explicitly report `suppress=N`; obsolete, alien, and
+   otherwise suppressed concepts fail closed even if an exact lookup returns them.
+8. The result preserves source and canonical names, RxCUIs, TTYs, suppression flags, match strategy,
+   lookup status, RxNorm dataset version, API version, and CareAlign terminology-policy version.
+9. Successful and deterministic fail-closed resolutions use a bounded in-process LRU cache with a
+   12-hour default TTL. Transient transport/provider failures are never cached. The version endpoint
+   is cached only after a successful response.
+10. Timeout, malformed response, ambiguous match, unsupported TTY, or missing relationship returns
    review—not a guess.
-9. RxNorm identity is terminology normalization, not evidence that two clinical orders are
+11. RxNorm identity is terminology normalization, not evidence that two clinical orders are
    therapeutically interchangeable.
+
+`evaluation/rxnorm/cases-v1.json` is the versioned terminology contract. CI validates its structure
+without network calls. A release candidate that enables RxNorm must separately run
+`evaluation/evaluate_rxnorm.py --live --confirm-live`, retain the returned RxNorm dataset/API
+versions, and inspect every failed or drifted case. Live terminology output is engineering evidence,
+not an expert clinical equivalence label.
 
 Relevant NLM endpoint specifications:
 
@@ -34,6 +45,7 @@ Relevant NLM endpoint specifications:
 - `getGenericProduct`: https://lhncbc.nlm.nih.gov/RxNav/APIs/api-RxNorm.getGenericProduct.html
 - `getRxConceptProperties`: https://lhncbc.nlm.nih.gov/RxNav/APIs/api-RxNorm.getRxConceptProperties.html
 - `getRxNormVersion`: https://lhncbc.nlm.nih.gov/RxNav/APIs/api-RxNorm.getRxNormVersion.html
+- Terms of service and attribution: https://lhncbc.nlm.nih.gov/RxNav/TermsofService.html
 
 RxNorm remains disabled by default until the identity policy and edge-case set receive the
 independent clinical review defined in

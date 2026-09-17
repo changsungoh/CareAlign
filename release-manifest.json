@@ -1,21 +1,25 @@
 {
-  "app_version": "0.3.0",
+  "app_version": "0.4.0",
   "artifacts": {
-    "backend/app/models/schemas.py": "32ed0c8b2466be64c75de6c9fbcad8955f0e9a27f5cfb45021077243331da6f0",
+    "backend/app/models/schemas.py": "2f4a83045fac2711532e014f9a85701f3affaa4ebafeddde460eee7e02e21d1b",
     "backend/app/rules/medication_aliases.json": "8cfa9315d05bfe660777788518744daeddc21fb0cdf4d6f01f0a97636aab5fba",
     "backend/app/rules/route_aliases.json": "c92a407c61f8a52cc3bca8ca6e02abf3d7487a02a6c124b6f35c5252b7e09dda",
     "backend/app/services/conflicts.py": "75637afd38321ef2f19d6d903e3d7b96b2a3c5ed8c7bb610efb34fbf7b780706",
     "backend/app/services/evidence.py": "f5983a8eb0ade3f028f3baf8ea84aa3946bdbec2032215e3d7353239f43c1581",
-    "backend/app/services/extraction.py": "1d4bb9a1a19a586a97203ac71fc509b6ba08513f98e3fc053dc8b9664f45c533",
+    "backend/app/services/extraction.py": "76166709b562f79ffbd879ec37ea44ea3374acf3dac71d094fb313ca0f14cf8a",
     "backend/app/services/normalization.py": "5cc8c5bb36c25f444147e2355d2ab44f3c8772e6c1c7fca0dfb0ed520830cfa4",
     "backend/app/services/provider_guard.py": "058e9fd72c7e0b10ae745d847cef57f2f961ed56c5978211cd73f30687a4f8e5",
-    "backend/app/services/rxnorm.py": "5b4f4c09d094b63d13b74d9e3765f668130bf22c9eff25d13059b0d0c6e7db23",
-    "backend/app/services/teachback.py": "9a3a9188042c0df0ae876bd011eb518299d0cf9bcb7f1f53b9b412c62584823e",
+    "backend/app/services/rxnorm.py": "bf0340d57102a3d720a01a9de30a59bffcf5386f55d14a7d0660fdb9e86c629d",
+    "backend/app/services/teachback.py": "0d47a761dee741428566b90b3aa6e9c0dcfd5d9156835ec59617d9241ad1d424",
     "evaluation/cases/synthetic-v1.jsonl": "7cb2d5a334835882db6caa09e87cb36c0a95fba3fa2650b0af4fc3246dc82f63",
-    "evaluation/schema/case.schema.json": "c2802fe7f6104b88bdfa58520f197696c723b679556c693430e09b1ed7aa9aed"
+    "evaluation/evaluate_rxnorm.py": "c2663ebd7360f526be45a65243d9327c35300f45a09c1a6299aba87c89777c22",
+    "evaluation/rxnorm/cases-v1.json": "67a859e86310587e49c02d341f04a5013b4c23802fb844a7d309589e1e904fb8",
+    "evaluation/schema/case.schema.json": "c2802fe7f6104b88bdfa58520f197696c723b679556c693430e09b1ed7aa9aed",
+    "research/clinical/rxnorm-edge-cases-v2.csv": "fd085b02ef0eb2ccd371b3667b9b309b3a25c9686b1e252d11b5f779f25df8f3"
   },
   "dataset_version": "synthetic-eval-v1",
   "prompt_version": "normalization-v1",
   "rules_version": "longitudinal-rules-v2",
-  "schema_version": 1
+  "schema_version": 1,
+  "terminology_policy_version": "rxnorm-policy-v2"
 }

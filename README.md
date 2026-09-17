@@ -208,6 +208,12 @@ medical-expert review. Protocols, data forms, claims controls and the initial ri
 Recruitment is blocked pending the appropriate written ethics/privacy determination, and clinical or
 regulatory claims are blocked pending qualified external review.
 
+The v0.4 terminology layer now records active/suppressed concept provenance, uses a bounded
+time-limited cache, and ships a versioned offline/live RxNorm contract. The contract is an
+engineering drift check only; RxNorm remains disabled in the public runtime until a current live
+report and independent expert review are complete. See
+[`evaluation/rxnorm/README.md`](evaluation/rxnorm/README.md).
+
 ## Evidence
 
 The project presentation cites a 2020 systematic review that included 54 studies overall. In its

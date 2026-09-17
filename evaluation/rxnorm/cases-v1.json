@@ -1,0 +1,102 @@
+{
+  "dataset_version": "rxnorm-contract-v1",
+  "disclaimer": "Engineering terminology contract only; not a clinical equivalence reference set.",
+  "source_documentation": [
+    "https://lhncbc.nlm.nih.gov/RxNav/APIs/api-RxNorm.findRxcuiByString.html",
+    "https://lhncbc.nlm.nih.gov/RxNav/APIs/api-RxNorm.getGenericProduct.html",
+    "https://lhncbc.nlm.nih.gov/RxNav/APIs/api-RxNorm.getRxConceptProperties.html",
+    "https://lhncbc.nlm.nih.gov/RxNav/APIs/api-RxNorm.getRxNormVersion.html"
+  ],
+  "cases": [
+    {
+      "case_id": "RXC-001",
+      "query": "metoprolol tartrate",
+      "expected_status": "resolved_exact",
+      "identity": "required",
+      "allowed_source_ttys": ["PIN"]
+    },
+    {
+      "case_id": "RXC-002",
+      "query": "metoprolol succinate",
+      "expected_status": "resolved_exact",
+      "identity": "required",
+      "allowed_source_ttys": ["PIN"]
+    },
+    {
+      "case_id": "RXC-003",
+      "query": "Zithromax 250 MG Oral Tablet",
+      "expected_status": "resolved_exact_generic_product",
+      "identity": "required",
+      "allowed_source_ttys": ["SBD"],
+      "allowed_canonical_ttys": ["SCD"]
+    },
+    {
+      "case_id": "RXC-004",
+      "query": "azithromycin 250 MG Oral Tablet",
+      "expected_status": "resolved_exact_generic_product",
+      "identity": "required",
+      "allowed_source_ttys": ["SCD"],
+      "allowed_canonical_ttys": ["SCD"]
+    },
+    {
+      "case_id": "RXC-005",
+      "query": "Lipitor 10 mg Tab",
+      "expected_status": "normalized_candidate_needs_review",
+      "identity": "forbidden",
+      "allowed_source_ttys": ["SBD"]
+    },
+    {
+      "case_id": "RXC-006",
+      "query": "Ambien",
+      "expected_status": "unsupported_term_type",
+      "identity": "forbidden",
+      "allowed_source_ttys": ["BN"]
+    },
+    {
+      "case_id": "RXC-007",
+      "query": "carealign synthetic unknown medicine xyz",
+      "expected_status": "not_found",
+      "identity": "forbidden",
+      "allowed_source_ttys": []
+    },
+    {
+      "case_id": "RXC-008",
+      "query": "metformin hydrochloride 500 MG Oral Tablet",
+      "expected_status": "resolved_exact_generic_product",
+      "identity": "required",
+      "allowed_source_ttys": ["SCD"],
+      "allowed_canonical_ttys": ["SCD"]
+    },
+    {
+      "case_id": "RXC-009",
+      "query": "24 HR metformin hydrochloride 500 MG Extended Release Oral Tablet",
+      "expected_status": "resolved_exact_generic_product",
+      "identity": "required",
+      "allowed_source_ttys": ["SCD"],
+      "allowed_canonical_ttys": ["SCD"]
+    }
+  ],
+  "relationship_assertions": [
+    {
+      "assertion_id": "RXR-001",
+      "left_case_id": "RXC-001",
+      "right_case_id": "RXC-002",
+      "expected_relation": "distinct_identity",
+      "risk_focus": "salt distinction"
+    },
+    {
+      "assertion_id": "RXR-002",
+      "left_case_id": "RXC-003",
+      "right_case_id": "RXC-004",
+      "expected_relation": "same_identity",
+      "risk_focus": "branded product to unique generic product"
+    },
+    {
+      "assertion_id": "RXR-003",
+      "left_case_id": "RXC-008",
+      "right_case_id": "RXC-009",
+      "expected_relation": "distinct_identity",
+      "risk_focus": "immediate-release versus extended-release product"
+    }
+  ]
+}
