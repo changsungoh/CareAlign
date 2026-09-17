@@ -35,7 +35,23 @@ insufficient-information states.
 | `rxnorm.py` | Optional exact-first NLM terminology resolution | Normalized/ambiguous/unsupported lookup cannot become comparison identity |
 | `conflicts.py` | Dose/frequency/route/action/omission checks | Deterministic, auditable and cannot choose the correct order |
 | `teachback.py` | Source-derived checklist and supportive feedback | Conflicted/unvalidated items cannot become an answer key |
-| `rate_limit.py` | Per-IP minute and global daily ceilings | Bounds denial-of-wallet exposure |
+| `provider_guard.py` | Provider circuit breaker with cooldown | Repeated upstream faults fail fast instead of cascading |
+| `observability.py` | Request IDs and structured operational events | Correlation without logging clinical text or secrets |
+| `rate_limit.py` | Per-IP minute limit and live-analysis daily ceiling | Bounds abuse and denial-of-wallet exposure without charging teach-back |
+
+## Operational provenance
+
+Every analysis response records the app and deployment revision, model, prompt, rules and dataset
+versions, request ID, provider call count, input/output token counts and elapsed analysis time. The
+same validated request ID is returned in `X-Request-ID`, allowing a user-visible failure to be
+correlated with structured server logs without logging the document body. `GET /api/health` is a
+process liveness check; `GET /api/readiness` separately reports provider configuration and circuit
+state.
+
+[`release-manifest.json`](../release-manifest.json) contains SHA-256 hashes for the extraction,
+evidence, normalization, conflict, terminology, teach-back, schema and evaluation artifacts. CI
+fails if one of those files changes without regenerating the manifest, making an undeclared
+safety-rule change visible before merge.
 
 ## State model
 
@@ -55,7 +71,8 @@ state—not a reassuring no-conflict result.
 ## Privacy and deployment
 
 The backend is stateless and has no application database or retrieval endpoint. Raw text logging is
-off by default. Production deploys the static Next.js client separately from the containerized
+off by default; structured logs contain paths, timings, counts and opaque correlation IDs only.
+Production deploys the static Next.js client separately from the containerized
 FastAPI service. CORS allows only the final frontend origin. The app is explicitly not configured for
 PHI or represented as HIPAA compliant.
 

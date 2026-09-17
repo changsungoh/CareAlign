@@ -20,11 +20,34 @@ type Analysis = {
   case_id: string; status: string; documents: DocumentInput[];
   instructions: Instruction[]; conflicts: Conflict[];
   safety_message: string; demo_mode: boolean;
-  metadata: { model_name: string; prompt_version: string; rules_version: string };
+  metadata: {
+    app_version: string; release_sha: string; request_id: string;
+    model_name: string; prompt_version: string; rules_version: string;
+    provider_calls: number; input_tokens: number; output_tokens: number;
+    analysis_duration_ms: number;
+  };
 };
 type Resolution = { conflictId: string; response: string; recordedAt: string };
 
 const API = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8000";
+
+async function responseBody(response: Response): Promise<Record<string, unknown>> {
+  const contentType = response.headers.get("content-type") ?? "";
+  if (!contentType.includes("application/json")) {
+    return { detail: "The analysis service returned an invalid response. No safety conclusion was produced." };
+  }
+  try {
+    return await response.json() as Record<string, unknown>;
+  } catch {
+    return { detail: "The analysis service returned malformed JSON. No safety conclusion was produced." };
+  }
+}
+
+function requestId(): string {
+  return typeof crypto !== "undefined" && "randomUUID" in crypto
+    ? crypto.randomUUID()
+    : `web-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+}
 const demoDocuments: DocumentInput[] = [
   {
     document_id: "aug-discharge", document_type: "Discharge instructions",
@@ -100,13 +123,21 @@ export default function Home() {
     setBusy(true); setSlowStart(false); setError(""); setTeachResult(null);
     const slowStartTimer = window.setTimeout(() => setSlowStart(true), 5000);
     try {
+      const correlationId = requestId();
       const response = await fetch(`${API}/api/analyze`, {
-        method: "POST", headers: { "Content-Type": "application/json" },
+        method: "POST", headers: {
+          "Content-Type": "application/json",
+          "X-Request-ID": correlationId,
+        },
         body: JSON.stringify({ documents }),
       });
-      const body = await response.json();
-      if (!response.ok) throw new Error(body.detail ?? "Analysis failed.");
-      setAnalysis(body);
+      const body = await responseBody(response);
+      if (!response.ok) {
+        const returnedId = response.headers.get("X-Request-ID") ?? correlationId;
+        const detail = typeof body.detail === "string" ? body.detail : "Analysis failed safely.";
+        throw new Error(`${detail} Request ID: ${returnedId}`);
+      }
+      setAnalysis(body as unknown as Analysis);
       requestAnimationFrame(() => document.querySelector("#results")?.scrollIntoView());
     } catch (reason) {
       setError(reason instanceof Error ? reason.message : "Analysis failed safely.");
@@ -129,14 +160,22 @@ export default function Home() {
     if (!analysis || !teachBack.trim()) return;
     setBusy(true); setError("");
     try {
+      const correlationId = requestId();
       const response = await fetch(`${API}/api/teach-back`, {
-        method: "POST", headers: { "Content-Type": "application/json" },
+        method: "POST", headers: {
+          "Content-Type": "application/json",
+          "X-Request-ID": correlationId,
+        },
         body: JSON.stringify({ instructions: analysis.instructions,
           excluded_instruction_ids: unresolvedIds, patient_response: teachBack }),
       });
-      const body = await response.json();
-      if (!response.ok) throw new Error(body.detail ?? "Teach-back check failed.");
-      setTeachResult(body.message);
+      const body = await responseBody(response);
+      if (!response.ok) {
+        const returnedId = response.headers.get("X-Request-ID") ?? correlationId;
+        const detail = typeof body.detail === "string" ? body.detail : "Teach-back check failed safely.";
+        throw new Error(`${detail} Request ID: ${returnedId}`);
+      }
+      setTeachResult(typeof body.message === "string" ? body.message : "Teach-back completed.");
     } catch (reason) {
       setError(reason instanceof Error ? reason.message : "Teach-back check failed safely.");
     } finally { setBusy(false); }
@@ -205,7 +244,7 @@ export default function Home() {
         <textarea rows={4} value={teachBack} onChange={(event) => setTeachBack(event.target.value)} placeholder="Example: I will take lisinopril 10 mg once a day in the morning." />
         <div className="result-actions"><button className="primary" disabled={busy || !teachBack.trim()} onClick={submitTeachBack}>Check my explanation</button><button className="quiet" onClick={() => setTeachBack("")}>Skip teach-back</button></div>{teachResult && <div className="teach-result" role="status">{teachResult}</div>}
       </section><button className="danger-link" onClick={clearAll}>Clear all session data</button>
-      <p className="metadata">Model: {analysis.metadata.model_name} · Prompt: {analysis.metadata.prompt_version} · Rules: {analysis.metadata.rules_version}</p>
+      <p className="metadata">App: {analysis.metadata.app_version} · Release: {analysis.metadata.release_sha.slice(0, 12)} · Model: {analysis.metadata.model_name} · Prompt: {analysis.metadata.prompt_version} · Rules: {analysis.metadata.rules_version}<br />Request: {analysis.metadata.request_id} · Provider calls: {analysis.metadata.provider_calls} · Tokens: {analysis.metadata.input_tokens.toLocaleString()} in / {analysis.metadata.output_tokens.toLocaleString()} out · {Math.round(analysis.metadata.analysis_duration_ms)} ms</p>
     </section>}
     <section className="principles"><div className="principles-heading"><p className="eyebrow">A DELIBERATE SAFETY ARCHITECTURE</p><h2>AI for meaning.<br /><span>Rules for safety.</span></h2><p>Intelligence where language is ambiguous. Determinism where patient safety demands consistency.</p></div><div className="principle-grid"><article><span>01</span><h3>Semantic extraction</h3><p>AI translates differently worded instructions into a strict, source-bound structure.</p></article><article><span>02</span><h3>Deterministic comparison</h3><p>Auditable code checks dose, frequency, route, action, and possible omissions.</p></article><article><span>03</span><h3>Human resolution</h3><p>CareAlign asks a question; only a person records the care team&apos;s answer.</p></article></div></section>
     <footer><div className="footer-brand"><span className="logo-mark" aria-hidden="true">+</span><div><strong>CareAlign</strong><span>Safer transitions through clearer instructions.</span></div></div><p><strong>Decision-support prototype only.</strong> Not clinically validated, HIPAA compliant, diagnostic, prescriptive, or cleared as a medical device.</p></footer>

@@ -7,7 +7,9 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
     app_env: str = "development"
-    app_version: str = "0.2.0"
+    app_version: str = "0.3.0"
+    release_sha: str = ""
+    render_git_commit: str = ""
     allowed_origins: str = "http://localhost:3000"
     debug_log_raw: bool = False
     demo_mode: bool = False
@@ -23,10 +25,22 @@ class Settings(BaseSettings):
     rxnorm_enabled: bool = False
     rxnorm_base_url: str = "https://rxnav.nlm.nih.gov/REST"
     rxnorm_timeout_seconds: float = 4.0
+    provider_failure_threshold: int = 3
+    provider_recovery_seconds: float = 30.0
 
     @cached_property
     def allowed_origin_list(self) -> list[str]:
         return [origin.strip() for origin in self.allowed_origins.split(",") if origin.strip()]
+
+    @property
+    def deployment_revision(self) -> str:
+        return self.release_sha or self.render_git_commit or "unknown"
+
+    @property
+    def provider_mode(self) -> str:
+        if self.demo_mode:
+            return "demo"
+        return "live" if self.anthropic_api_key.strip() else "unconfigured"
 
 
 settings = Settings()

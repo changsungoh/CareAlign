@@ -16,5 +16,9 @@ services:
         value: "false"
       - key: LLM_MODEL
         value: claude-haiku-4-5-20251001
+      - key: PROVIDER_FAILURE_THRESHOLD
+        value: "3"
+      - key: PROVIDER_RECOVERY_SECONDS
+        value: "30"
       - key: ALLOWED_ORIGINS
         sync: false

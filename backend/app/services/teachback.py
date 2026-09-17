@@ -2,6 +2,7 @@ import re
 from datetime import UTC, datetime
 
 from app.core.config import settings
+from app.core.observability import current_request_id
 from app.models.schemas import (
     AnalysisMetadata,
     ChecklistItem,
@@ -14,6 +15,9 @@ from app.models.schemas import (
 
 def metadata() -> AnalysisMetadata:
     return AnalysisMetadata(
+        app_version=settings.app_version,
+        release_sha=settings.deployment_revision,
+        request_id=current_request_id(),
         model_name=settings.llm_model if settings.anthropic_api_key else "transparent-demo-matcher",
         prompt_version=settings.prompt_version,
         rules_version=settings.rules_version,

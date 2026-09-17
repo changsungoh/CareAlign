@@ -184,15 +184,30 @@ class CareDocument(StrictModel):
 
 
 class AnalysisMetadata(StrictModel):
+    app_version: str
+    release_sha: str
+    request_id: str
     model_name: str
     prompt_version: str
     rules_version: str
     dataset_version: str
     evaluated_at: datetime
+    provider_calls: int = Field(default=0, ge=0)
+    input_tokens: int = Field(default=0, ge=0)
+    output_tokens: int = Field(default=0, ge=0)
+    analysis_duration_ms: float = Field(default=0, ge=0)
 
 
 class HealthResponse(StrictModel):
     status: str
+
+
+class ReadinessResponse(StrictModel):
+    status: str
+    provider_mode: str
+    provider_circuit: str
+    retry_after_seconds: float = Field(ge=0)
+    release_sha: str
 
 
 class VersionResponse(StrictModel):
@@ -202,3 +217,5 @@ class VersionResponse(StrictModel):
     dataset_version: str
     evaluated_at: datetime
     demo_mode: bool
+    provider_mode: str
+    release_sha: str

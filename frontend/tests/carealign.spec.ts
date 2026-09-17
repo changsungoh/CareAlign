@@ -16,7 +16,11 @@ test("synthetic comparison reaches source-linked clarification", async ({ page }
         summary: "frequency changed from twice a day to once a day",
         clarification_question: "Which instruction should I follow?", status: "validated",
         confidence: 0.96, evidence_spans: ["twice a day", "once a day"] }],
-      metadata: { model_name: "demo", prompt_version: "v1", rules_version: "v1" },
+      metadata: {
+        app_version: "0.3.0", release_sha: "test-release", request_id: "e2e-request",
+        model_name: "demo", prompt_version: "v1", rules_version: "v1",
+        provider_calls: 0, input_tokens: 0, output_tokens: 0, analysis_duration_ms: 12,
+      },
     }),
   }));
   await page.goto("/");

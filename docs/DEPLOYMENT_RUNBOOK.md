@@ -7,7 +7,10 @@
 3. Production live extraction uses `DEBUG_LOG_RAW=false` and `DEMO_MODE=false`. Use Demo Mode only when the UI visibly labels it.
 4. For live extraction, add `ANTHROPIC_API_KEY`, keep the tested snapshot model, set provider spending
    limits, and keep the key out of previews and frontend variables.
-5. Verify `GET /api/health` and `GET /api/version` from an incognito session.
+5. Keep `PROVIDER_FAILURE_THRESHOLD=3` and `PROVIDER_RECOVERY_SECONDS=30` unless a reviewed load test supports a change.
+6. Verify `GET /api/health`, `GET /api/readiness`, and `GET /api/version` from an incognito session.
+   Health proves the process is alive; only readiness proves live extraction is configured and its
+   provider circuit is closed.
 
 ## Frontend on Vercel
 
@@ -25,6 +28,8 @@
 
 ## Release smoke test
 
+- Run `python scripts/release_manifest.py --verify`; regenerate with `--write` only when the
+  safety-critical change is intentional and reviewed.
 - Open the production UI in a clean browser.
 - Confirm all three safety notices are visible before analysis.
 - Run the bundled two-document synthetic case.
@@ -33,6 +38,9 @@
 - Record a response, reload in the same tab, and verify session behavior.
 - Run teach-back only on the non-conflicted lisinopril instruction.
 - Trigger invalid chronology and provider failure; neither may show “no conflict.”
+- Confirm the result footer shows request ID, release revision, provider calls, tokens and duration.
+- Confirm the response `X-Request-ID` matches the result metadata and appears in the corresponding
+  structured backend log event.
 - Close the tab and verify no case can be retrieved from the backend.
 
 ## Rollback

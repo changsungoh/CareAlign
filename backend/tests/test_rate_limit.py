@@ -31,10 +31,28 @@ def test_minute_limit_blocks_only_after_configured_allowance(monkeypatch) -> Non
 def test_daily_budget_blocks_new_live_work(monkeypatch) -> None:
     monkeypatch.setattr(settings, "rate_limit_per_minute", 10)
     monkeypatch.setattr(settings, "daily_request_limit", 1)
-    rate_limit.enforce_rate_limit(request("198.51.100.7"))
+    rate_limit.enforce_analysis_budget(request("198.51.100.7"))
     with pytest.raises(HTTPException) as error:
-        rate_limit.enforce_rate_limit(request("203.0.113.9"))
+        rate_limit.enforce_analysis_budget(request("203.0.113.9"))
     assert error.value.status_code == 503
+
+
+def test_teachback_rate_limit_does_not_consume_live_analysis_budget(monkeypatch) -> None:
+    monkeypatch.setattr(settings, "demo_mode", False)
+    monkeypatch.setattr(settings, "rate_limit_per_minute", 10)
+    monkeypatch.setattr(settings, "daily_request_limit", 1)
+    rate_limit.enforce_rate_limit(request("198.51.100.7"))
+    assert len(rate_limit._daily) == 0
+    rate_limit.enforce_analysis_budget(request("203.0.113.9"))
+    assert len(rate_limit._daily) == 1
+
+
+def test_demo_analysis_does_not_consume_live_budget(monkeypatch) -> None:
+    monkeypatch.setattr(settings, "demo_mode", True)
+    monkeypatch.setattr(settings, "rate_limit_per_minute", 10)
+    monkeypatch.setattr(settings, "daily_request_limit", 1)
+    rate_limit.enforce_analysis_budget(request())
+    assert len(rate_limit._daily) == 0
 
 
 def test_expired_entries_are_pruned(monkeypatch) -> None:
@@ -43,6 +61,6 @@ def test_expired_entries_are_pruned(monkeypatch) -> None:
     expired = time.time() - 90_000
     rate_limit._requests["198.51.100.7"].append(expired)
     rate_limit._daily.append(expired)
-    rate_limit.enforce_rate_limit(request())
+    rate_limit.enforce_analysis_budget(request())
     assert len(rate_limit._requests["198.51.100.7"]) == 1
     assert len(rate_limit._daily) == 1

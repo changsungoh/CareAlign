@@ -8,7 +8,7 @@ import urllib.request
 
 def fetch(url: str) -> tuple[int, str]:
     request = urllib.request.Request(
-        url, headers={"User-Agent": "CareAlign-Preflight/0.2"}
+        url, headers={"User-Agent": "CareAlign-Preflight/0.3"}
     )
     with urllib.request.urlopen(request, timeout=20) as response:
         return response.status, response.read().decode("utf-8")
@@ -29,9 +29,15 @@ def main() -> None:
         version_status, version = fetch(
             f"{arguments.backend_url.rstrip('/')}/api/version"
         )
+        readiness_status, readiness = fetch(
+            f"{arguments.backend_url.rstrip('/')}/api/readiness"
+        )
         frontend_status, frontend = fetch(arguments.frontend_url)
         checks["backend_health"] = (
             health_status == 200 and json.loads(health)["status"] == "ok"
+        )
+        checks["backend_readiness"] = (
+            readiness_status == 200 and json.loads(readiness)["status"] == "ready"
         )
         metadata = json.loads(version)
         checks["version_metadata"] = version_status == 200 and all(
@@ -41,6 +47,8 @@ def main() -> None:
                 "prompt_version",
                 "rules_version",
                 "dataset_version",
+                "release_sha",
+                "provider_mode",
             )
         )
         checks["frontend"] = frontend_status == 200
