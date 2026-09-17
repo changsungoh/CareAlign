@@ -8,9 +8,14 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   backend:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     defaults:
       run:
         working-directory: backend
@@ -20,12 +25,15 @@ jobs:
         with:
           python-version: "3.12"
       - run: uv sync --dev
+      - run: uv lock --check
       - run: uv run ruff check .
       - run: uv run pytest
       - run: uv run python ../evaluation/evaluate.py
+      - run: uv run python ../scripts/release_manifest.py --verify
 
   frontend:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     defaults:
       run:
         working-directory: frontend
@@ -37,6 +45,7 @@ jobs:
           cache: npm
           cache-dependency-path: frontend/package-lock.json
       - run: npm ci
+      - run: npm audit --omit=dev --audit-level=high
       - run: npm run typecheck
       - run: npm run build
       - run: npx playwright install --with-deps chromium
