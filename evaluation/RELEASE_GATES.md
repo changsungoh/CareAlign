@@ -15,6 +15,7 @@ performance.
 | E2E demo | Compare, clarify, record, teach-back and export paths pass |
 | Live-provider completion | All 85 functional cases complete; 5 fault-injection cases pass separately |
 | Evaluation provenance | Live and deterministic reports are visibly separate |
+| RxNorm contract | Offline contract valid; when RxNorm is enabled, current live contract has no failed checks |
 
 The dataset is synthetic and versioned independently from prompt and rules. It was authored by the
 solo builder and has not received independent clinical review. A shuffled delayed self-review is
@@ -30,3 +31,10 @@ fault-injection cases remain separate deterministic backend tests.
 
 These pass results apply only to the versioned synthetic, author-labelled engineering dataset. They
 do not establish clinical accuracy, independent validation, or real-world patient safety.
+
+## Current terminology-evaluation status
+
+The versioned RxNorm contract contains nine live lookup cases and three identity-relationship
+assertions. Its offline schema/relationship validation passes in CI. A current live RxNorm report
+has not yet been produced, so RxNorm remains disabled by default and no terminology-performance or
+clinical-equivalence claim is permitted.

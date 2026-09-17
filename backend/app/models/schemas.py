@@ -54,9 +54,11 @@ class MedicationIdentity(StrictModel):
     rxcui: str | None = None
     concept_name: str | None = None
     term_type: str | None = None
+    source_suppress: str | None = None
     canonical_rxcui: str | None = None
     canonical_name: str | None = None
     canonical_term_type: str | None = None
+    canonical_suppress: str | None = None
     match_strategy: str | None = None
     rxnorm_dataset_version: str | None = None
     rxnorm_api_version: str | None = None
@@ -191,6 +193,7 @@ class AnalysisMetadata(StrictModel):
     prompt_version: str
     rules_version: str
     dataset_version: str
+    terminology_policy_version: str
     evaluated_at: datetime
     provider_calls: int = Field(default=0, ge=0)
     input_tokens: int = Field(default=0, ge=0)
@@ -215,6 +218,7 @@ class VersionResponse(StrictModel):
     prompt_version: str
     rules_version: str
     dataset_version: str
+    terminology_policy_version: str
     evaluated_at: datetime
     demo_mode: bool
     provider_mode: str

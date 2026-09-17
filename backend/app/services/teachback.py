@@ -22,6 +22,7 @@ def metadata() -> AnalysisMetadata:
         prompt_version=settings.prompt_version,
         rules_version=settings.rules_version,
         dataset_version=settings.dataset_version,
+        terminology_policy_version=settings.terminology_policy_version,
         evaluated_at=datetime.now(UTC),
     )
 

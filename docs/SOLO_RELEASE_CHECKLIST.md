@@ -23,6 +23,8 @@
 - [ ] Complete the shuffled label CSV without opening original labels.
 - [ ] Run `python evaluation/blind_review.py score` and disclose disagreements.
 - [ ] Describe all results as synthetic engineering evaluation, not clinical performance.
+- [ ] Validate the offline RxNorm contract; if RxNorm will be enabled, run and inspect the current
+      live contract and record the exact NLM dataset/API versions.
 
 ## Submission
 

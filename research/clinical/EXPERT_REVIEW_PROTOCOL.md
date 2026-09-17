@@ -33,10 +33,11 @@ salt, formulation, strength/dose form, multi-ingredient, package, misspelling, a
 and unsupported-term-type cases. Unsupported-pattern, security, teach-back, and resilience cases
 remain engineering endpoints unless separately assigned to an appropriate reviewer.
 
-The initial 12-case terminology set is
-[`rxnorm-edge-cases-v1.csv`](rxnorm-edge-cases-v1.csv). Its clinical labels intentionally remain
-`pending_independent_review`; the engineering disposition is a fail-closed requirement, not an
-expert determination of interchangeability.
+The concrete 12-case terminology set is
+[`rxnorm-edge-cases-v2.csv`](rxnorm-edge-cases-v2.csv); v1 is retained as the original planning
+artifact. Where possible, v2 links the human-review case to an executable `RXC-*` contract case.
+Clinical labels intentionally remain `pending_independent_review`; the engineering disposition and
+passing live lookup are not expert determinations of interchangeability.
 
 ## First-pass questions
 

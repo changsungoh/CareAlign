@@ -23,6 +23,7 @@ type Analysis = {
   metadata: {
     app_version: string; release_sha: string; request_id: string;
     model_name: string; prompt_version: string; rules_version: string;
+    terminology_policy_version: string;
     provider_calls: number; input_tokens: number; output_tokens: number;
     analysis_duration_ms: number;
   };
@@ -244,7 +245,7 @@ export default function Home() {
         <textarea rows={4} value={teachBack} onChange={(event) => setTeachBack(event.target.value)} placeholder="Example: I will take lisinopril 10 mg once a day in the morning." />
         <div className="result-actions"><button className="primary" disabled={busy || !teachBack.trim()} onClick={submitTeachBack}>Check my explanation</button><button className="quiet" onClick={() => setTeachBack("")}>Skip teach-back</button></div>{teachResult && <div className="teach-result" role="status">{teachResult}</div>}
       </section><button className="danger-link" onClick={clearAll}>Clear all session data</button>
-      <p className="metadata">App: {analysis.metadata.app_version} · Release: {analysis.metadata.release_sha.slice(0, 12)} · Model: {analysis.metadata.model_name} · Prompt: {analysis.metadata.prompt_version} · Rules: {analysis.metadata.rules_version}<br />Request: {analysis.metadata.request_id} · Provider calls: {analysis.metadata.provider_calls} · Tokens: {analysis.metadata.input_tokens.toLocaleString()} in / {analysis.metadata.output_tokens.toLocaleString()} out · {Math.round(analysis.metadata.analysis_duration_ms)} ms</p>
+      <p className="metadata">App: {analysis.metadata.app_version} · Release: {analysis.metadata.release_sha.slice(0, 12)} · Model: {analysis.metadata.model_name} · Prompt: {analysis.metadata.prompt_version} · Rules: {analysis.metadata.rules_version} · Terminology: {analysis.metadata.terminology_policy_version}<br />Request: {analysis.metadata.request_id} · Provider calls: {analysis.metadata.provider_calls} · Tokens: {analysis.metadata.input_tokens.toLocaleString()} in / {analysis.metadata.output_tokens.toLocaleString()} out · {Math.round(analysis.metadata.analysis_duration_ms)} ms</p>
     </section>}
     <section className="principles"><div className="principles-heading"><p className="eyebrow">A DELIBERATE SAFETY ARCHITECTURE</p><h2>AI for meaning.<br /><span>Rules for safety.</span></h2><p>Intelligence where language is ambiguous. Determinism where patient safety demands consistency.</p></div><div className="principle-grid"><article><span>01</span><h3>Semantic extraction</h3><p>AI translates differently worded instructions into a strict, source-bound structure.</p></article><article><span>02</span><h3>Deterministic comparison</h3><p>Auditable code checks dose, frequency, route, action, and possible omissions.</p></article><article><span>03</span><h3>Human resolution</h3><p>CareAlign asks a question; only a person records the care team&apos;s answer.</p></article></div></section>
     <footer><div className="footer-brand"><span className="logo-mark" aria-hidden="true">+</span><div><strong>CareAlign</strong><span>Safer transitions through clearer instructions.</span></div></div><p><strong>Decision-support prototype only.</strong> Not clinically validated, HIPAA compliant, diagnostic, prescriptive, or cleared as a medical device.</p></footer>

@@ -1,0 +1,13 @@
+case_id,input_a,input_b,risk_focus,required_engineering_disposition,contract_case_ids,clinical_reference_status
+RXE2-001,metoprolol tartrate,metoprolol succinate,salt distinction,Keep distinct exact active PIN identities,RXC-001|RXC-002,pending_independent_review
+RXE2-002,Zithromax 250 MG Oral Tablet,azithromycin 250 MG Oral Tablet,brand to unique generic product,Accept only exact active SBD to one active SCD mapping,RXC-003|RXC-004,pending_independent_review
+RXE2-003,Toprol XL 25 MG Extended Release Oral Tablet,metoprolol succinate 25 MG Extended Release Oral Tablet,brand to salt and form specific generic product,Accept only exact active SBD to one active SCD mapping,,pending_independent_review
+RXE2-004,metformin hydrochloride 500 MG Oral Tablet,24 HR metformin hydrochloride 500 MG Extended Release Oral Tablet,immediate versus extended release,Keep distinct product identities,RXC-008|RXC-009,pending_independent_review
+RXE2-005,Lipitor 10 mg Tab,atorvastatin 10 MG Oral Tablet,normalized search candidate,Do not create comparison identity from normalized search,RXC-005,pending_independent_review
+RXE2-006,Ambien,zolpidem tartrate Oral Tablet,brand-name TTY without complete product detail,Return unsupported term type without comparison identity,RXC-006,pending_independent_review
+RXE2-007,carealign synthetic unknown medicine xyz,known ingredient,no terminology match,Return not found without comparison identity,RXC-007,pending_independent_review
+RXE2-008,amoxicillin 875 MG Oral Tablet,amoxicillin 875 MG / clavulanate potassium 125 MG Oral Tablet,multi-ingredient distinction,Keep ingredient sets distinct,,pending_independent_review
+RXE2-009,insulin glargine 100 UNT/ML Injection,insulin glargine 300 UNT/ML Injection,strength distinction,Keep strength-specific products distinct,,pending_independent_review
+RXE2-010,component-only SCDC concept,complete SCD product,unsupported component TTY,Return unsupported term type without comparison identity,,pending_independent_review
+RXE2-011,one query returning multiple active exact RxCUIs,same text,ambiguous exact match,Return ambiguous exact without comparison identity,,pending_independent_review
+RXE2-012,product returning multiple generic relationships,same product text,ambiguous generic mapping,Return review without comparison identity,,pending_independent_review

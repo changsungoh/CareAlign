@@ -7,7 +7,7 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
     app_env: str = "development"
-    app_version: str = "0.3.0"
+    app_version: str = "0.4.0"
     release_sha: str = ""
     render_git_commit: str = ""
     allowed_origins: str = "http://localhost:3000"
@@ -18,6 +18,7 @@ class Settings(BaseSettings):
     prompt_version: str = "normalization-v1"
     rules_version: str = "longitudinal-rules-v2"
     dataset_version: str = "synthetic-eval-v1"
+    terminology_policy_version: str = "rxnorm-policy-v2"
     anthropic_api_key: str = ""
     llm_model: str = "claude-haiku-4-5-20251001"
     daily_request_limit: int = 250
@@ -25,6 +26,8 @@ class Settings(BaseSettings):
     rxnorm_enabled: bool = False
     rxnorm_base_url: str = "https://rxnav.nlm.nih.gov/REST"
     rxnorm_timeout_seconds: float = 4.0
+    rxnorm_cache_ttl_seconds: float = 43200.0
+    rxnorm_cache_max_entries: int = 512
     provider_failure_threshold: int = 3
     provider_recovery_seconds: float = 30.0
 

@@ -36,7 +36,8 @@ def test_demo_analysis_detects_frequency_and_omission(monkeypatch) -> None:
     kinds = {item["conflict_type"] for item in body["conflicts"]}
     assert {"frequency_difference", "possible_omission"} <= kinds
     assert body["demo_mode"] is True
-    assert body["metadata"]["app_version"] == "0.3.0"
+    assert body["metadata"]["app_version"] == "0.4.0"
+    assert body["metadata"]["terminology_policy_version"] == "rxnorm-policy-v2"
     assert body["metadata"]["request_id"] == response.headers["X-Request-ID"]
     assert body["metadata"]["provider_calls"] == 0
     assert body["metadata"]["input_tokens"] == 0

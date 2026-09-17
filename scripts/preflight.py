@@ -7,9 +7,7 @@ import urllib.request
 
 
 def fetch(url: str) -> tuple[int, str]:
-    request = urllib.request.Request(
-        url, headers={"User-Agent": "CareAlign-Preflight/0.3"}
-    )
+    request = urllib.request.Request(url, headers={"User-Agent": "CareAlign-Preflight/0.4"})
     with urllib.request.urlopen(request, timeout=20) as response:
         return response.status, response.read().decode("utf-8")
 
@@ -19,23 +17,17 @@ def main() -> None:
     parser.add_argument("--frontend-url", required=True)
     parser.add_argument("--backend-url", required=True)
     arguments = parser.parse_args()
-    if not arguments.frontend_url.startswith(
+    if not arguments.frontend_url.startswith("https://") or not arguments.backend_url.startswith(
         "https://"
-    ) or not arguments.backend_url.startswith("https://"):
+    ):
         raise SystemExit("Production URLs must use HTTPS.")
     checks: dict[str, bool] = {}
     try:
         health_status, health = fetch(f"{arguments.backend_url.rstrip('/')}/api/health")
-        version_status, version = fetch(
-            f"{arguments.backend_url.rstrip('/')}/api/version"
-        )
-        readiness_status, readiness = fetch(
-            f"{arguments.backend_url.rstrip('/')}/api/readiness"
-        )
+        version_status, version = fetch(f"{arguments.backend_url.rstrip('/')}/api/version")
+        readiness_status, readiness = fetch(f"{arguments.backend_url.rstrip('/')}/api/readiness")
         frontend_status, frontend = fetch(arguments.frontend_url)
-        checks["backend_health"] = (
-            health_status == 200 and json.loads(health)["status"] == "ok"
-        )
+        checks["backend_health"] = health_status == 200 and json.loads(health)["status"] == "ok"
         checks["backend_readiness"] = (
             readiness_status == 200 and json.loads(readiness)["status"] == "ready"
         )
@@ -47,6 +39,7 @@ def main() -> None:
                 "prompt_version",
                 "rules_version",
                 "dataset_version",
+                "terminology_policy_version",
                 "release_sha",
                 "provider_mode",
             )

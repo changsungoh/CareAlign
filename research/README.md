@@ -9,7 +9,7 @@ the responsible person, deviations, failures, and an immutable result or signed 
 
 | Workstream | Current evidence | Next external gate | Completion evidence |
 |---|---|---|---|
-| RxNorm terminology | Exact-first resolver, fail-closed statuses, provenance fields, unit tests | Clinical review of identity policy and edge-case set | Reviewed policy, frozen test set, versioned results |
+| RxNorm terminology | Exact-first resolver, active-concept enforcement, bounded cache, provenance fields, unit tests, versioned live contract | Execute live contract and obtain clinical review of identity policy/edge cases | Current NLM-version report, reviewed policy, frozen expert labels |
 | Clinical/regulatory | Intended use, claims matrix, risk register, US/Singapore questions | Qualified regulatory review | Signed determination memo per target jurisdiction |
 | User testing | Synthetic-only protocol, ethics request draft, participant sheet, data plan, recruitment materials | NUS/appropriate ethics determination before recruitment | Determination ID, consent records, de-identified results |
 | Independent medical review | Blinded review and adjudication protocol | Recruit independent qualified reviewers | Credential attestations, locked labels, adjudication report |
@@ -43,7 +43,8 @@ the responsible person, deviations, failures, and an immutable result or signed 
 - [`usability/SESSION_LOG.csv`](usability/SESSION_LOG.csv): one row per attempted session.
 - [`usability/ANALYSIS_TEMPLATE.md`](usability/ANALYSIS_TEMPLATE.md): predeclared reporting structure.
 - [`clinical/EXPERT_REVIEW_PROTOCOL.md`](clinical/EXPERT_REVIEW_PROTOCOL.md): independent blinded review.
-- [`clinical/rxnorm-edge-cases-v1.csv`](clinical/rxnorm-edge-cases-v1.csv): terminology safety set awaiting expert labels.
+- [`clinical/rxnorm-edge-cases-v1.csv`](clinical/rxnorm-edge-cases-v1.csv): original terminology safety-set draft retained for history.
+- [`clinical/rxnorm-edge-cases-v2.csv`](clinical/rxnorm-edge-cases-v2.csv): concrete reviewer set linked to executable contract cases; awaiting expert labels.
 - [`clinical/REVIEW_FORM.csv`](clinical/REVIEW_FORM.csv): one reviewer judgment per row.
 - [`clinical/ADJUDICATION_LOG.csv`](clinical/ADJUDICATION_LOG.csv): disagreement resolution trail.
 - [`clinical/REVIEWER_ATTESTATION.md`](clinical/REVIEWER_ATTESTATION.md): qualifications and independence.
