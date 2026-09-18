@@ -58,6 +58,17 @@ def evaluate_teachback(
     instructions: list[Instruction], excluded: set[str], response: str
 ) -> TeachBackResponse:
     checklist = build_checklist(instructions, excluded)
+    if not checklist:
+        return TeachBackResponse(
+            checklist=[],
+            findings=[],
+            message=(
+                "Teach-back is unavailable because there are no confirmed, "
+                "non-conflicted instructions to review."
+            ),
+            needs_human_review=True,
+            metadata=metadata(),
+        )
     normalized = re.sub(r"[^a-z0-9.]+", " ", response.casefold())
     findings: list[TeachBackFinding] = []
     for item in checklist:

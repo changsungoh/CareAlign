@@ -114,6 +114,11 @@ export default function Home() {
   const unresolvedIds = useMemo(
     () => analysis?.conflicts.flatMap((item) => item.instruction_ids) ?? [], [analysis],
   );
+  const teachableInstructionCount = useMemo(() => {
+    const excluded = new Set(unresolvedIds);
+    return analysis?.instructions.filter((item) =>
+      item.validation_status === "validated" && !excluded.has(item.instruction_id)).length ?? 0;
+  }, [analysis, unresolvedIds]);
   const documentsValid = useMemo(() => {
     const dates = documents.map((item) => item.document_date);
     return documents.length >= 2 && documents.length <= 5
@@ -320,8 +325,10 @@ export default function Home() {
         </section>}
       </>}
       <section className="teachback" aria-labelledby="teach-title"><div className="teach-icon" aria-hidden="true">✓</div><p className="eyebrow">OPTIONAL TEACH-BACK</p><h2 id="teach-title">Explain the confirmed instructions in your own words</h2><p>Unresolved or uncertain instructions are excluded. This is a supportive review, not a test.</p>
-        <textarea rows={4} value={teachBack} onChange={(event) => setTeachBack(event.target.value)} placeholder="Example: I will take lisinopril 10 mg once a day in the morning." />
-        <div className="result-actions"><button className="primary" disabled={busy || !teachBack.trim()} onClick={submitTeachBack}>Check my explanation</button><button className="quiet" onClick={() => setTeachBack("")}>Skip teach-back</button></div>{teachResult && <div className="teach-result" role="status">{teachResult}</div>}
+        {teachableInstructionCount === 0 ? <div className="empty" role="status">Teach-back is unavailable because every extracted instruction is unresolved, uncertain, or unvalidated. Confirm the open questions with a qualified healthcare professional first.</div> : <>
+          <textarea rows={4} value={teachBack} onChange={(event) => setTeachBack(event.target.value)} placeholder="Example: I will take lisinopril 10 mg once a day in the morning." />
+          <div className="result-actions"><button className="primary" disabled={busy || !teachBack.trim()} onClick={submitTeachBack}>Check my explanation</button><button className="quiet" onClick={() => setTeachBack("")}>Skip teach-back</button></div>{teachResult && <div className="teach-result" role="status">{teachResult}</div>}
+        </>}
       </section><button className="danger-link" onClick={clearAll}>Clear all session data</button>
       <p className="metadata">App: {analysis.metadata.app_version} · Release: {analysis.metadata.release_sha.slice(0, 12)} · Model: {analysis.metadata.model_name} · Prompt: {analysis.metadata.prompt_version} · Rules: {analysis.metadata.rules_version} · Terminology: {analysis.metadata.terminology_policy_version}<br />Request: {analysis.metadata.request_id} · Provider calls: {analysis.metadata.provider_calls} · Tokens: {analysis.metadata.input_tokens.toLocaleString()} in / {analysis.metadata.output_tokens.toLocaleString()} out · {Math.round(analysis.metadata.analysis_duration_ms)} ms</p>
     </section>}
