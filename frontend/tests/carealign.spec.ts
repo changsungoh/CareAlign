@@ -36,6 +36,30 @@ test("synthetic comparison reaches source-linked clarification", async ({ page }
   await expect(page.getByText("User-entered · not verified by CareAlign", { exact: false })).toBeVisible();
 });
 
+test("FHIR R4 import groups medication resources into dated records", async ({ page }) => {
+  await page.route("**/api/fhir/import", async (route) => route.fulfill({
+    contentType: "application/json",
+    body: JSON.stringify({
+      fhir_version: "R4", source_resource_count: 3, imported_count: 2, ignored_count: 0,
+      warnings: ["Grouped 3 medication resources into 2 dated care records."],
+      documents: [
+        { document_id: "fhir-2026-08-20", document_type: "FHIR MedicationRequest record", document_date: "2026-08-20", raw_text: "metoprolol tartrate: Take 25 mg twice a day." },
+        { document_id: "fhir-2026-09-10", document_type: "FHIR MedicationRequest record", document_date: "2026-09-10", raw_text: "metoprolol tartrate: Take 25 mg once a day." },
+      ],
+      provenance: [
+        { document_id: "fhir-2026-08-20", resource_type: "MedicationRequest", resource_id: "rx-1", bundle_entry_index: 0, source_paths: ["medicationCodeableConcept", "authoredOn", "dosageInstruction[0].text"] },
+      ],
+    }),
+  }));
+  await page.goto("/");
+  await page.getByRole("button", { name: "Import FHIR R4" }).click();
+  await page.getByRole("button", { name: "Load synthetic FHIR sample" }).click();
+  await page.getByRole("button", { name: "Validate and import" }).click();
+  await expect(page.getByText("2 dated records imported")).toBeVisible();
+  await expect(page.getByText("fhir-2026-08-20", { exact: false })).toBeVisible();
+  await expect(page.locator('input[value="FHIR MedicationRequest record"]')).toHaveCount(2);
+});
+
 test("timeline accepts up to five documents and allows removal", async ({ page }) => {
   await page.goto("/");
   await page.getByRole("button", { name: "Add document" }).click();

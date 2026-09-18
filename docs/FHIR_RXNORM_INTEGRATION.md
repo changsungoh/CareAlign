@@ -51,22 +51,30 @@ RxNorm remains disabled by default until the identity policy and edge-case set r
 independent clinical review defined in
 [`research/clinical/EXPERT_REVIEW_PROTOCOL.md`](../research/clinical/EXPERT_REVIEW_PROTOCOL.md).
 
-## Future FHIR import
+## Implemented FHIR R4 import boundary
 
-FHIR import remains read-only and out of the hackathon runtime. The relevant resource is
-`MedicationRequest`, which represents an order or request for medication and includes medication,
-subject, authored date, dosage instruction and related provenance:
-[HL7 FHIR R5 MedicationRequest](https://hl7.org/fhir/R5/medicationrequest.html).
+`POST /api/fhir/import` accepts a synthetic FHIR R4 `Bundle`, `MedicationRequest`, or
+`MedicationStatement`. It is a local, read-only conversion boundary: it performs no EHR network
+request, OAuth flow, write-back, or database storage. Patient/subject identity fields are ignored.
+The supported resource shapes follow the official
+[FHIR R4 MedicationRequest](https://hl7.org/fhir/R4/medicationrequest.html) and
+[FHIR R4 MedicationStatement](https://hl7.org/fhir/R4/medicationstatement.html) definitions.
 
 | CareAlign field | Candidate FHIR source | Guardrail |
 |---|---|---|
-| document ID/date | Bundle entry ID, `authoredOn` | Preserve source and timezone; never invent chronology |
-| medication | `medication` CodeableReference | Retain coding system, code, display and original text |
+| document ID/date | Resource ID and `authoredOn`, `dateAsserted`, or effective date | Group by complete source date; never invent chronology |
+| medication | `medicationCodeableConcept` or referenced `Medication.code` | Require readable text/display; never infer from an opaque code |
 | action/status | `status`, `intent` plus source text | Do not translate status into patient advice |
 | dose/frequency/timing | `dosageInstruction` | Unsupported structures remain source text and review |
 | route | `dosageInstruction.route` | Normalize only known coding/text equivalence |
-| evidence | original resource path and rendered text | Every displayed statement links back to its resource |
+| evidence | resource type/ID, Bundle index, and original field paths | Every imported line retains machine-readable provenance |
 
-Production import would require OAuth authorization, explicit consent/notice, minimum scopes,
+The importer caps JSON at 512 KB, outputs at most five dated records, and reports skipped or
+unrenderable resources. Same-date medication resources are combined because CareAlign compares
+dated care records rather than treating each medication as a separate visit. Unsupported structured
+dosage is preserved as uncertainty rather than guessed.
+
+Production EHR connectivity would still require OAuth authorization, explicit consent/notice,
+minimum scopes,
 tenant isolation, audit logs, revocation, token security, provenance display, version handling, and a
 clinical terminology service agreement.

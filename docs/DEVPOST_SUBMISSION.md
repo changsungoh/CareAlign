@@ -42,6 +42,7 @@ unavailable—not false reassurance.
 - FastAPI and Pydantic for the stateless API and strict contracts
 - Anthropic-compatible structured extraction for live AI mode
 - NLM RxNorm API as an optional, conservative terminology resolver
+- Read-only FHIR R4 medication import with source-date grouping and field-level provenance
 - Decimal unit conversion and versioned deterministic rules
 - Browser `sessionStorage` for ephemeral, human-entered notes
 - Pytest, Ruff, Playwright, GitHub Actions, Docker, Render and Vercel configuration
@@ -64,17 +65,18 @@ does not infer whether a formulation change was intentional.
 ## Evaluation
 
 The repository includes 90 versioned synthetic cases across conflict detection, unsupported-pattern
-containment, teach-back paraphrases, adversarial text, and fault injection. The committed perfect
-scores come from a deterministic bundled-parser and rule regression that makes zero LLM calls; they
-are not live-model performance. A live LLM evaluation and the prepared delayed solo label review
-remain incomplete. All results are synthetic, author-labeled engineering evidence—not independent
-or clinical validation—and retain model, prompt, rules, and dataset versions for reproducibility.
+containment, teach-back paraphrases, adversarial text, and fault injection. The deterministic
+bundled-parser report is kept separate from a cost-confirmed live Claude run of 85 functional cases
+(128 provider calls) plus five resilience fault-injection cases. Both reports produced perfect
+results on this synthetic, author-labeled dataset; neither is independent or clinical validation.
+The prepared delayed solo label review remains incomplete. Artifacts retain model, prompt, rules,
+dataset, token, cost, and failure accounting for reproducibility.
 
 ## Impact and future scope
 
 CareAlign targets one preventable part of medication harm: the information gap between care records
 and patient understanding. Next steps are independent clinician labeling, longitudinal usability
-research, broader accessibility testing, RxNorm-assisted identity, consented read-only FHIR import,
+research, broader accessibility testing, deeper RxNorm-assisted identity, consented EHR OAuth,
 and formal privacy, security, ethics, and regulatory assessment before any real-data pilot.
 
 ## Team

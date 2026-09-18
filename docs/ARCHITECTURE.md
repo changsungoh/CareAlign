@@ -10,8 +10,10 @@ that an absent flag proves safety.
 
 ```mermaid
 flowchart TD
-  A["Synthetic documents"] --> B["FastAPI input boundary"]
-  B --> C["LLM semantic extraction"]
+  A["Synthetic text or FHIR R4 JSON"] --> B["FastAPI input boundary"]
+  B --> I["Read-only FHIR mapping + provenance"]
+  I --> C["LLM semantic extraction"]
+  B --> C
   C --> D["Strict schema + evidence verification"]
   D --> E["Deterministic normalization + rules"]
   E --> F["Source-linked question"]
@@ -33,6 +35,7 @@ insufficient-information states.
 | `evidence.py` | Normalized exact and high-similarity span check | Untraced text cannot be displayed as validated |
 | `normalization.py` | Decimal mass conversion, route and medication maps | Unknown equivalence is never guessed |
 | `rxnorm.py` | Optional exact-first NLM terminology resolution | Normalized/ambiguous/unsupported lookup cannot become comparison identity |
+| `fhir.py` | Read-only R4 medication import and date grouping | Identity fields ignored; dates/names never inferred |
 | `conflicts.py` | Dose/frequency/route/action/omission checks | Deterministic, auditable and cannot choose the correct order |
 | `teachback.py` | Source-derived checklist and supportive feedback | Conflicted/unvalidated items cannot become an answer key |
 | `provider_guard.py` | Provider circuit breaker with cooldown | Repeated upstream faults fail fast instead of cascading |
@@ -80,6 +83,8 @@ PHI or represented as HIPAA compliant.
 
 The request and UI accept 2–5 uniquely dated documents. The engine checks each longitudinal
 transition and collapses duplicate alert types while preserving every contributing source.
-Post-hackathon priorities are consented FHIR read-only import, clinician-reviewed labels,
-multilingual plain language, prospective usability work, and formal clinical/regulatory assessment.
+The current FHIR boundary accepts pasted synthetic R4 JSON only; it has no EHR authorization,
+network retrieval, write-back, or PHI-ready storage. Post-hackathon priorities are consented OAuth
+integration, clinician-reviewed labels, multilingual plain language, prospective usability work,
+and formal clinical/regulatory assessment.
 Execution protocols and evidence forms for these gates live in [`research/`](../research/README.md).

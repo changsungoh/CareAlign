@@ -15,6 +15,8 @@ from app.models.schemas import (
     AnalysisStatus,
     AnalyzeRequest,
     AnalyzeResponse,
+    FHIRImportRequest,
+    FHIRImportResponse,
     HealthResponse,
     ReadinessResponse,
     TeachBackRequest,
@@ -24,6 +26,7 @@ from app.models.schemas import (
 )
 from app.services.conflicts import detect_conflicts
 from app.services.extraction import extract_document
+from app.services.fhir import FHIRImportError, import_fhir_resource
 from app.services.provider_guard import CircuitOpenError, provider_circuit
 from app.services.rate_limit import enforce_analysis_budget, enforce_rate_limit
 from app.services.teachback import evaluate_teachback
@@ -69,6 +72,25 @@ def version() -> VersionResponse:
         provider_mode=settings.provider_mode,
         release_sha=settings.deployment_revision,
     )
+
+
+@router.post("/fhir/import", response_model=FHIRImportResponse)
+def import_fhir(
+    payload: FHIRImportRequest, request: Request, _: None = Depends(enforce_rate_limit)
+) -> FHIRImportResponse:
+    del request
+    try:
+        result = import_fhir_resource(payload.resource)
+    except FHIRImportError as error:
+        raise HTTPException(422, str(error)) from error
+    log_event(
+        "fhir_import_completed",
+        source_resource_count=result.source_resource_count,
+        imported_count=result.imported_count,
+        ignored_count=result.ignored_count,
+        warning_count=len(result.warnings),
+    )
+    return result
 
 
 @router.post("/analyze", response_model=AnalyzeResponse)

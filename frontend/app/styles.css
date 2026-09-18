@@ -86,6 +86,25 @@ h1 span { color: var(--teal); }
 .workspace h2, .results h2, .teachback h2 { margin: 0; font-size: clamp(2rem,3.3vw,3.15rem); line-height: 1.03; letter-spacing: -.048em; }
 .section-copy { max-width: 680px; margin: 15px 0 0; color: var(--muted); line-height: 1.62; }
 .result-actions { justify-content: flex-start; flex-wrap: wrap; margin: 0; }
+.fhir-panel { margin-top: 26px; padding: 24px; border: 1px solid #b9dcd3; border-radius: 18px; background: linear-gradient(145deg,#f7fcfa,#eef8f5); box-shadow: inset 0 1px rgba(255,255,255,.8); }
+.fhir-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 24px; }
+.fhir-heading h3 { margin: 9px 0 7px; font-size: 1.35rem; letter-spacing: -.025em; }
+.fhir-heading p { max-width: 780px; margin: 0; color: var(--muted); font-size: .8rem; line-height: 1.55; }
+.interop-badge { color: var(--teal); font-size: .64rem; font-weight: 850; letter-spacing: .12em; }
+.fhir-panel > label { display: grid; gap: 8px; margin-top: 18px; color: var(--ink-soft); font-size: .76rem; font-weight: 800; }
+.fhir-panel textarea { min-height: 190px; font-family: ui-monospace,SFMono-Regular,Menlo,monospace; font-size: .73rem; }
+.fhir-panel > .result-actions { margin-top: 13px; }
+.fhir-report { margin-top: 18px; padding: 18px; border: 1px solid #c9e3dc; border-radius: 14px; background: #fff; }
+.fhir-report > div:first-child { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; }
+.fhir-report > div:first-child strong { color: var(--teal-dark); font-size: .88rem; }
+.fhir-report > div:first-child span { color: var(--muted); font-size: .7rem; }
+.fhir-report ul { display: grid; gap: 8px; margin: 14px 0 0; padding: 0; list-style: none; }
+.fhir-report li { display: grid; grid-template-columns: minmax(180px,.7fr) minmax(160px,.6fr) 1fr; gap: 10px; padding: 10px 12px; border-radius: 9px; background: #f5faf8; color: var(--muted); font-size: .68rem; }
+.fhir-report code { color: var(--ink); font-weight: 750; }
+.fhir-report small { overflow-wrap: anywhere; color: #789089; }
+.fhir-warnings { display: grid; gap: 4px; margin-top: 14px; padding: 12px 14px; border-left: 3px solid var(--warning-line); background: var(--warning); color: #715b29; }
+.fhir-warnings strong { font-size: .72rem; }
+.fhir-warnings p { margin: 0; font-size: .7rem; line-height: 1.4; }
 .privacy-banner { display: flex; align-items: center; gap: 13px; margin: 30px 0 0; padding: 14px 16px; border: 1px solid #d8eee7; border-radius: 12px; background: #f1faf7; }
 .privacy-icon { width: 27px; height: 27px; display: grid; place-items: center; flex: 0 0 auto; border-radius: 8px; background: #dff5ee; color: var(--teal); font-weight: 900; }
 .privacy-banner div { display: flex; flex-wrap: wrap; gap: 6px 10px; }
@@ -206,6 +225,9 @@ footer p { max-width: 590px; margin: 0; text-align: right; }
   .section-heading, .nav-actions { align-items: flex-start; flex-direction: column; }
   .section-number { display: none; }
   .section-heading .result-actions { width: 100%; margin-top: 18px; }
+  .fhir-panel { padding: 18px; }
+  .fhir-heading, .fhir-report > div:first-child { align-items: flex-start; flex-direction: column; }
+  .fhir-report li { grid-template-columns: 1fr; }
   .document-grid { grid-template-columns: 1fr; }
   .privacy-banner { align-items: flex-start; }
   .privacy-banner div { display: grid; }
