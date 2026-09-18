@@ -30,6 +30,8 @@ The repository now contains the end-to-end hackathon MVP:
 - exact/fuzzy evidence-span verification and strict schemas;
 - curated medication identity plus optional exact-first RxNorm resolution with salt/form-safe review
   states, version provenance, route and mass-unit normalization;
+- read-only FHIR R4 import for `MedicationRequest` and `MedicationStatement`, grouped by source date
+  with field-level provenance and no patient-identity ingestion;
 - deterministic dose, frequency, route, action and possible-omission checks;
 - source-linked clarification questions with copy, print and download actions;
 - user-only resolution notes in browser `sessionStorage`;
@@ -113,6 +115,7 @@ Run the browser flow with `npm run test:e2e` after `npx playwright install chrom
 | `GET /api/health` | Deployment health check |
 | `GET /api/readiness` | Provider configuration and circuit-breaker readiness |
 | `GET /api/version` | Model/prompt/rules/dataset traceability |
+| `POST /api/fhir/import` | Validate and convert synthetic FHIR R4 medication resources into dated records |
 | `POST /api/analyze` | Extract and deterministically compare 2–5 ordered documents |
 | `POST /api/teach-back` | Compare a paraphrase to source-derived, non-conflicted checklist items |
 
@@ -183,7 +186,8 @@ this process can reduce recall bias but is not independent external review.
   thresholds, and taper-phase context; the MVP does not compare them.
 - The prototype is not configured or represented as HIPAA compliant.
 - Demo medication aliases are deliberately limited; similar ingredients with different salts or
-  formulations are not collapsed. RxNorm integration is the first post-hackathon clinical-data step.
+  formulations are not collapsed. The FHIR importer is a local, read-only interoperability
+  prototype—not an EHR connection—and RxNorm remains a terminology aid rather than a clinical rule.
 - Formulation changes such as IR-to-ER conversions were considered as a distinct, lower-severity
   category but excluded from the MVP to avoid adding a clinical inference surface without adequate
   validation. CareAlign does not infer whether such a change was intentional.

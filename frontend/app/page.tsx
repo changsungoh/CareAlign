@@ -29,6 +29,14 @@ type Analysis = {
   };
 };
 type Resolution = { conflictId: string; response: string; recordedAt: string };
+type FHIRImportResult = {
+  fhir_version: string; documents: DocumentInput[]; warnings: string[];
+  source_resource_count: number; imported_count: number; ignored_count: number;
+  provenance: Array<{
+    document_id: string; resource_type: string; resource_id: string | null;
+    bundle_entry_index: number | null; source_paths: string[];
+  }>;
+};
 
 const API = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8000";
 
@@ -61,6 +69,26 @@ const demoDocuments: DocumentInput[] = [
     raw_text: "Continue metoprolol tartrate 25 mg by mouth once a day.\nContinue lisinopril 10 mg by mouth once a day in the morning.",
   },
 ];
+const demoFHIRBundle = {
+  resourceType: "Bundle", type: "collection", entry: [
+    { resource: { resourceType: "MedicationRequest", id: "aug-metoprolol",
+      authoredOn: "2026-08-20T09:00:00Z",
+      medicationCodeableConcept: { text: "metoprolol tartrate" },
+      dosageInstruction: [{ text: "Take metoprolol tartrate 25 mg by mouth twice a day." }] } },
+    { resource: { resourceType: "MedicationRequest", id: "aug-atorvastatin",
+      authoredOn: "2026-08-20T09:00:00Z",
+      medicationCodeableConcept: { text: "atorvastatin" },
+      dosageInstruction: [{ text: "Take atorvastatin 20 mg by mouth once a day at bedtime." }] } },
+    { resource: { resourceType: "MedicationRequest", id: "sep-metoprolol",
+      authoredOn: "2026-09-10T11:00:00Z",
+      medicationCodeableConcept: { text: "metoprolol tartrate" },
+      dosageInstruction: [{ text: "Take metoprolol tartrate 25 mg by mouth once a day." }] } },
+    { resource: { resourceType: "MedicationRequest", id: "sep-lisinopril",
+      authoredOn: "2026-09-10T11:00:00Z",
+      medicationCodeableConcept: { text: "lisinopril" },
+      dosageInstruction: [{ text: "Take lisinopril 10 mg by mouth once a day in the morning." }] } },
+  ],
+};
 
 export default function Home() {
   const [documents, setDocuments] = useState<DocumentInput[]>(demoDocuments);
@@ -73,6 +101,11 @@ export default function Home() {
   const [slowStart, setSlowStart] = useState(false);
   const [error, setError] = useState("");
   const [largeText, setLargeText] = useState(false);
+  const [fhirOpen, setFhirOpen] = useState(false);
+  const [fhirJson, setFhirJson] = useState("");
+  const [fhirBusy, setFhirBusy] = useState(false);
+  const [fhirError, setFhirError] = useState("");
+  const [fhirResult, setFhirResult] = useState<FHIRImportResult | null>(null);
 
   useEffect(() => {
     const stored = sessionStorage.getItem("carealign-resolutions");
@@ -83,7 +116,8 @@ export default function Home() {
   );
   const documentsValid = useMemo(() => {
     const dates = documents.map((item) => item.document_date);
-    return documents.every((item) => item.document_type.trim() && item.document_date && item.raw_text.trim())
+    return documents.length >= 2 && documents.length <= 5
+      && documents.every((item) => item.document_type.trim() && item.document_date && item.raw_text.trim())
       && new Set(dates).size === dates.length
       && dates.every((value, index) => index === 0 || dates[index - 1] < value);
   }, [documents]);
@@ -118,6 +152,40 @@ export default function Home() {
   function removeDocument(index: number) {
     if (documents.length <= 2) return;
     setDocuments((current) => current.filter((_, itemIndex) => itemIndex !== index));
+  }
+
+  function replaceDocuments(nextDocuments: DocumentInput[]) {
+    setDocuments(nextDocuments); setAnalysis(null); setResolutions([]); setTeachBack("");
+    setTeachResult(null); setConsent(false); setError("");
+    sessionStorage.removeItem("carealign-resolutions");
+  }
+
+  async function importFHIR() {
+    setFhirBusy(true); setFhirError(""); setFhirResult(null);
+    try {
+      let resource: unknown;
+      try { resource = JSON.parse(fhirJson); }
+      catch { throw new Error("FHIR input must be valid JSON."); }
+      const correlationId = requestId();
+      const response = await fetch(`${API}/api/fhir/import`, {
+        method: "POST", headers: {
+          "Content-Type": "application/json",
+          "X-Request-ID": correlationId,
+        },
+        body: JSON.stringify({ resource }),
+      });
+      const body = await responseBody(response);
+      if (!response.ok) {
+        const returnedId = response.headers.get("X-Request-ID") ?? correlationId;
+        const detail = typeof body.detail === "string" ? body.detail : "FHIR import failed safely.";
+        throw new Error(`${detail} Request ID: ${returnedId}`);
+      }
+      const result = body as unknown as FHIRImportResult;
+      replaceDocuments(result.documents);
+      setFhirResult(result);
+    } catch (reason) {
+      setFhirError(reason instanceof Error ? reason.message : "FHIR import failed safely.");
+    } finally { setFhirBusy(false); }
   }
 
   async function analyze() {
@@ -216,7 +284,17 @@ export default function Home() {
       <div className="visual-footer"><span><i />AI extracts meaning</span><span><i />Rules verify differences</span></div>
     </div></section>
     <section className="workspace" aria-labelledby="workspace-title">
-      <div className="section-heading"><div><span className="section-number">01</span><p className="eyebrow">COMPARE RECORDS</p><h2 id="workspace-title">Build the care timeline</h2><p className="section-copy">Add records from oldest to newest. CareAlign compares meaning while deterministic rules control every safety flag.</p></div><div className="result-actions"><button className="quiet" onClick={() => setDocuments(demoDocuments)}>Load safe demo</button><button className="quiet" disabled={documents.length >= 5} onClick={addDocument}>+ Add document</button></div></div>
+      <div className="section-heading"><div><span className="section-number">01</span><p className="eyebrow">COMPARE RECORDS</p><h2 id="workspace-title">Build the care timeline</h2><p className="section-copy">Add records from oldest to newest. CareAlign compares meaning while deterministic rules control every safety flag.</p></div><div className="result-actions"><button className="quiet" onClick={() => replaceDocuments(demoDocuments)}>Load safe demo</button><button className="quiet" aria-expanded={fhirOpen} onClick={() => setFhirOpen((value) => !value)}>Import FHIR R4</button><button className="quiet" disabled={documents.length >= 5} onClick={addDocument}>+ Add document</button></div></div>
+      {fhirOpen && <section className="fhir-panel" aria-labelledby="fhir-title"><div className="fhir-heading"><div><span className="interop-badge">READ-ONLY INTEROPERABILITY</span><h3 id="fhir-title">Import synthetic FHIR medication data</h3><p>Accepts an R4 Bundle, MedicationRequest, or MedicationStatement. CareAlign ignores patient identity fields, groups medication resources by source date, and never invents missing chronology.</p></div><button className="remove" onClick={() => setFhirOpen(false)} aria-label="Close FHIR import">Close</button></div>
+        <label>FHIR JSON<textarea aria-label="FHIR JSON" rows={9} value={fhirJson} onChange={(event) => setFhirJson(event.target.value)} placeholder={'{"resourceType":"Bundle","entry":[…]}'} /></label>
+        <div className="result-actions"><button className="quiet" onClick={() => setFhirJson(JSON.stringify(demoFHIRBundle, null, 2))}>Load synthetic FHIR sample</button><button className="primary" disabled={fhirBusy || !fhirJson.trim()} onClick={importFHIR}>{fhirBusy ? "Importing safely…" : "Validate and import"}</button></div>
+        {fhirError && <div className="error" role="alert">{fhirError}</div>}
+        {fhirResult && <div className="fhir-report" role="status"><div><strong>{fhirResult.imported_count} dated record{fhirResult.imported_count === 1 ? "" : "s"} imported</strong><span>FHIR {fhirResult.fhir_version} · {fhirResult.source_resource_count} source resources · {fhirResult.ignored_count} ignored</span></div>
+          <ul>{fhirResult.provenance.map((item, index) => <li key={`${item.resource_type}-${item.resource_id ?? index}`}><code>{item.resource_type}/{item.resource_id ?? `entry-${item.bundle_entry_index}`}</code><span>→ {item.document_id}</span><small>{item.source_paths.join(" · ")}</small></li>)}</ul>
+          {fhirResult.warnings.length > 0 && <div className="fhir-warnings"><strong>Import notes</strong>{fhirResult.warnings.map((warning) => <p key={warning}>{warning}</p>)}</div>}
+          {fhirResult.imported_count < 2 && <p className="validation-hint">Add at least one later or earlier dated record before analysis.</p>}
+        </div>}
+      </section>}
       <div className="privacy-banner"><span className="privacy-icon" aria-hidden="true">◇</span><div><strong>Synthetic data only</strong><span>Do not enter real patient data. Input is processed without server-side storage.</span></div></div>
       <div className="document-grid">{documents.map((document, index) => <article className="document-card" key={document.document_id}>
         <div className="conflict-top"><span className="step">Document {index + 1}</span>{documents.length > 2 && <button className="remove" onClick={() => removeDocument(index)} aria-label={`Remove document ${index + 1}`}>Remove</button>}</div>
@@ -225,7 +303,7 @@ export default function Home() {
         <label>Instruction text<textarea maxLength={4000} rows={8} value={document.raw_text} onChange={(event) => updateDocument(index, "raw_text", event.target.value)} /></label><small>{document.raw_text.length}/4,000 characters</small>
       </article>)}</div>
       <label className="consent"><input type="checkbox" checked={consent} onChange={(event) => setConsent(event.target.checked)} /><span>I confirm this is synthetic data and understand CareAlign does not provide medical advice.</span></label>
-      {!documentsValid && <p className="validation-hint">Every record needs a unique date and must appear from oldest to newest.</p>}
+      {!documentsValid && <p className="validation-hint">Add 2–5 complete records. Every record needs a unique date and must appear from oldest to newest.</p>}
       <button className="primary analyze-button" disabled={!consent || !documentsValid || busy} onClick={analyze}>{busy ? "Checking safely…" : <>Analyze care timeline <span aria-hidden="true">→</span></>}</button>
       {slowStart && <p className="slow-start" role="status">The secure analysis server is starting. After inactivity, the first request may take up to 60 seconds.</p>}
       {error && <div className="error" role="alert">{error}</div>}

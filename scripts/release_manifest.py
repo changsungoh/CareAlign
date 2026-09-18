@@ -16,6 +16,7 @@ ARTIFACTS = (
     "backend/app/services/conflicts.py",
     "backend/app/services/evidence.py",
     "backend/app/services/extraction.py",
+    "backend/app/services/fhir.py",
     "backend/app/services/normalization.py",
     "backend/app/services/provider_guard.py",
     "backend/app/services/rxnorm.py",

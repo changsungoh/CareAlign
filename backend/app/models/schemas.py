@@ -3,6 +3,7 @@ from __future__ import annotations
 from datetime import date, datetime
 from decimal import Decimal, InvalidOperation
 from enum import StrEnum
+from typing import Any
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
@@ -183,6 +184,40 @@ class CareDocument(StrictModel):
     provider: str | None = Field(default=None, max_length=200)
     document_date: date
     raw_text: str = Field(min_length=1, max_length=4000)
+
+
+class FHIRImportRequest(StrictModel):
+    resource: dict[str, Any]
+
+    @field_validator("resource")
+    @classmethod
+    def limit_resource_size(cls, value: dict[str, Any]) -> dict[str, Any]:
+        # Application-level bound after JSON parsing. Production deployments
+        # should also enforce a request-body limit at the reverse proxy.
+        import json
+
+        encoded = json.dumps(value, separators=(",", ":"), ensure_ascii=False).encode("utf-8")
+        if len(encoded) > 512_000:
+            raise ValueError("FHIR JSON must be 512 KB or smaller")
+        return value
+
+
+class FHIRProvenance(StrictModel):
+    document_id: str
+    resource_type: str
+    resource_id: str | None = None
+    bundle_entry_index: int | None = Field(default=None, ge=0)
+    source_paths: list[str]
+
+
+class FHIRImportResponse(StrictModel):
+    fhir_version: str
+    documents: list[CareDocument]
+    provenance: list[FHIRProvenance]
+    warnings: list[str]
+    source_resource_count: int = Field(ge=0)
+    imported_count: int = Field(ge=0)
+    ignored_count: int = Field(ge=0)
 
 
 class AnalysisMetadata(StrictModel):
