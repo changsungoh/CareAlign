@@ -50,6 +50,31 @@ def test_equivalent_mass_units_do_not_conflict() -> None:
     assert detect_conflicts([left, right], ["old", "new"]) == []
 
 
+def test_redundant_daily_interval_metadata_does_not_create_frequency_conflict() -> None:
+    left = instruction("a", "old", 1)
+    right = instruction("b", "new", 1)
+    right.frequency = Frequency(
+        pattern_type=PatternType.FIXED,
+        times_per_day=1,
+        interval_hours=24,
+        raw_expression="once a day in the morning",
+    )
+
+    assert detect_conflicts([left, right], ["old", "new"]) == []
+
+
+def test_q24h_and_once_daily_are_equivalent() -> None:
+    left = instruction("a", "old", 1)
+    right = instruction("b", "new", 1)
+    right.frequency = Frequency(
+        pattern_type=PatternType.INTERVAL,
+        interval_hours=24,
+        raw_expression="every 24 hours",
+    )
+
+    assert detect_conflicts([left, right], ["old", "new"]) == []
+
+
 def test_longitudinal_frequency_alerts_are_collapsed() -> None:
     conflicts = detect_conflicts(
         [instruction("a", "first", 2), instruction("b", "second", 1), instruction("c", "third", 3)],

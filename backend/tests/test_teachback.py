@@ -41,3 +41,14 @@ def test_matching_paraphrase_is_not_marked_missing() -> None:
         [safe_instruction()], set(), "I take lisinopril 10 mg once a day in the morning."
     )
     assert all(item.result == "correct" for item in result.findings)
+
+
+def test_empty_checklist_cannot_report_success() -> None:
+    result = evaluate_teachback(
+        [safe_instruction()], {"safe-1"}, "I take lisinopril once a day."
+    )
+
+    assert result.checklist == []
+    assert result.findings == []
+    assert result.needs_human_review is True
+    assert "unavailable" in result.message.casefold()

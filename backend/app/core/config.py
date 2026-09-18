@@ -16,7 +16,7 @@ class Settings(BaseSettings):
     max_document_chars: int = 4000
     rate_limit_per_minute: int = 10
     prompt_version: str = "normalization-v1"
-    rules_version: str = "longitudinal-rules-v2"
+    rules_version: str = "longitudinal-rules-v3"
     dataset_version: str = "synthetic-eval-v1"
     terminology_policy_version: str = "rxnorm-policy-v2"
     anthropic_api_key: str = ""

@@ -28,6 +28,26 @@ def _append_unique(target: list[Instruction], additions: list[Instruction]) -> N
     target.extend(item for item in additions if item.instruction_id not in known)
 
 
+def _canonical_frequency(item: Instruction) -> tuple[str, int] | None:
+    """Return the safest deterministic representation available for comparison.
+
+    Structured extraction may redundantly encode a daily instruction as both
+    ``times_per_day=1`` and ``interval_hours=24``. Prefer the explicit daily
+    count so that harmless provider variation cannot create a false flag.
+    Exact sub-day intervals are converted to the same daily-count form.
+    """
+    frequency = item.frequency
+    if frequency is None:
+        return None
+    if frequency.times_per_day is not None:
+        return ("times_per_day", frequency.times_per_day)
+    if frequency.interval_hours is None:
+        return None
+    if frequency.interval_hours <= 24 and 24 % frequency.interval_hours == 0:
+        return ("times_per_day", 24 // frequency.interval_hours)
+    return ("interval_hours", frequency.interval_hours)
+
+
 def detect_conflicts(
     instructions: list[Instruction], ordered_document_ids: list[str]
 ) -> list[Conflict]:
@@ -121,9 +141,9 @@ def detect_conflicts(
                 and left_frequency.pattern_type.value in comparable
                 and right_frequency.pattern_type.value in comparable
             ):
-                left_value = (left_frequency.times_per_day, left_frequency.interval_hours)
-                right_value = (right_frequency.times_per_day, right_frequency.interval_hours)
-                if left_value != right_value:
+                left_value = _canonical_frequency(left)
+                right_value = _canonical_frequency(right)
+                if left_value is not None and right_value is not None and left_value != right_value:
                     collect(
                         medication_id,
                         ConflictType.FREQUENCY,

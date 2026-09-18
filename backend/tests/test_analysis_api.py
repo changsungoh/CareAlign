@@ -92,3 +92,44 @@ def test_prompt_injection_is_not_treated_as_instruction(monkeypatch) -> None:
     response = client.post("/api/analyze", json=body)
     assert response.status_code == 200
     assert response.json()["status"] == "needs_review"
+
+
+def test_safe_demo_keeps_non_conflicted_instruction_for_teachback(monkeypatch) -> None:
+    monkeypatch.setattr(settings, "demo_mode", True)
+    body = payload()
+    body["documents"][0]["raw_text"] += (
+        "\nContinue lisinopril 10 mg by mouth once a day in the morning."
+    )
+    body["documents"][1]["raw_text"] += (
+        "\nContinue lisinopril 10 mg by mouth once a day in the morning."
+    )
+
+    analysis_response = client.post("/api/analyze", json=body)
+    assert analysis_response.status_code == 200
+    analysis = analysis_response.json()
+    assert len(analysis["conflicts"]) == 2
+    assert {item["medication_name"] for item in analysis["conflicts"]} == {
+        "metoprolol tartrate",
+        "atorvastatin",
+    }
+
+    excluded = {
+        instruction_id
+        for conflict in analysis["conflicts"]
+        for instruction_id in conflict["instruction_ids"]
+    }
+    teachback_response = client.post(
+        "/api/teach-back",
+        json={
+            "instructions": analysis["instructions"],
+            "excluded_instruction_ids": sorted(excluded),
+            "patient_response": (
+                "I take lisinopril 10 mg by mouth once a day in the morning."
+            ),
+        },
+    )
+    assert teachback_response.status_code == 200
+    teachback = teachback_response.json()
+    assert teachback["needs_human_review"] is False
+    assert teachback["checklist"]
+    assert {item["instruction_id"] for item in teachback["checklist"]}.isdisjoint(excluded)
