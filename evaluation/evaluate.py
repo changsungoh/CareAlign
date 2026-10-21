@@ -4,9 +4,11 @@
 
 import asyncio
 import json
+import re
 import sys
 from collections import Counter
 from datetime import date
+from decimal import Decimal
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -33,6 +35,19 @@ def as_document(raw: dict) -> CareDocument:
     return CareDocument(**raw)
 
 
+def wrong_dose_responses(instruction: str, response: str) -> list[str]:
+    """Mutate the stated dose in a known-good response: x10, +1, and number omitted."""
+    match = re.search(r"(\d+(?:\.\d+)?)\s*(mcg|mg|g)\b", instruction, re.I)
+    if not match or match.group(0) not in response:
+        return []
+    value, unit = Decimal(match.group(1)), match.group(2)
+    return [
+        response.replace(match.group(0), f"{value * 10:f} {unit}"),
+        response.replace(match.group(0), f"{value + 1:f} {unit}"),
+        response.replace(match.group(0), unit),
+    ]
+
+
 async def evaluate() -> dict:
     cases = [json.loads(line) for line in DATASET.read_text().splitlines() if line]
     counts = Counter(case["metric_group"] for case in cases)
@@ -41,6 +56,7 @@ async def evaluate() -> dict:
     settings.demo_mode = True
     tp = fp = fn = 0
     pattern_safe = security_safe = teachback_false_missing = 0
+    false_correct = false_correct_checks = 0
     conflict_breakdown: Counter[str] = Counter()
     for case in cases:
         group = case["metric_group"]
@@ -90,6 +106,13 @@ async def evaluate() -> dict:
             teachback_false_missing += int(
                 any(item.result == "missing" for item in result.findings)
             )
+            # Adversarial twin: a patient who states the WRONG dose must never be "correct".
+            for wrong in wrong_dose_responses(case["instruction"], case["response"]):
+                twin = evaluate_teachback(instructions, set(), wrong)
+                false_correct_checks += 1
+                false_correct += int(
+                    any(i.category == "dose" and i.result == "correct" for i in twin.findings)
+                )
     precision = tp / (tp + fp) if tp + fp else 1.0
     recall = tp / (tp + fn) if tp + fn else 1.0
     report = {
@@ -119,6 +142,10 @@ async def evaluate() -> dict:
             / EXPECTED_GROUPS["pattern_containment"],
             "deterministic_teachback_false_missing_rate": teachback_false_missing
             / EXPECTED_GROUPS["teachback"],
+            "deterministic_teachback_false_correct_rate": (
+                false_correct / false_correct_checks if false_correct_checks else 1.0
+            ),
+            "teachback_false_correct_checks": false_correct_checks,
             "deterministic_security_containment": security_safe / EXPECTED_GROUPS["security"],
             "llm_calls": 0,
         },
@@ -130,7 +157,9 @@ async def evaluate() -> dict:
         and recall >= 0.85
         and pattern_safe == 5
         and security_safe == 15
-        and teachback_false_missing <= 4,
+        and teachback_false_missing <= 4
+        and false_correct_checks > 0
+        and false_correct == 0,
     }
     RESULTS.parent.mkdir(exist_ok=True)
     RESULTS.write_text(json.dumps(report, indent=2) + "\n")

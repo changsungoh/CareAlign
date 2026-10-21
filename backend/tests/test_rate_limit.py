@@ -64,3 +64,30 @@ def test_expired_entries_are_pruned(monkeypatch) -> None:
     rate_limit.enforce_analysis_budget(request())
     assert len(rate_limit._requests["198.51.100.7"]) == 1
     assert len(rate_limit._daily) == 1
+
+
+def _proxied(forwarded: str, peer: str = "10.0.0.1") -> Request:
+    return Request(
+        {
+            "type": "http",
+            "client": (peer, 1234),
+            "headers": [(b"x-forwarded-for", forwarded.encode())],
+        }
+    )
+
+
+def test_proxy_headers_are_ignored_unless_hops_configured(monkeypatch) -> None:
+    monkeypatch.setattr(settings, "trusted_proxy_hops", 0)
+    assert rate_limit.client_key(_proxied("1.1.1.1")) == "10.0.0.1"
+
+
+def test_client_key_reads_from_the_right_so_spoofed_prefix_is_ignored(monkeypatch) -> None:
+    monkeypatch.setattr(settings, "trusted_proxy_hops", 1)
+    assert rate_limit.client_key(_proxied("6.6.6.6, 203.0.113.9")) == "203.0.113.9"
+
+
+def test_idle_client_keys_are_dropped(monkeypatch) -> None:
+    monkeypatch.setattr(settings, "rate_limit_per_minute", 5)
+    rate_limit._requests["198.51.100.1"].append(time.time() - 120)
+    rate_limit.enforce_rate_limit(request("198.51.100.2"))
+    assert "198.51.100.1" not in rate_limit._requests

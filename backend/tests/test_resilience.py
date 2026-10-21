@@ -78,3 +78,40 @@ def test_provider_failures_return_generic_unavailable(
     assert response.status_code == 503
     assert response.json()["detail"] == ("Analysis unavailable. No safety conclusion was produced.")
     assert str(provider_error) not in response.text
+
+
+def test_malformed_provider_dose_degrades_one_instruction_not_the_analysis(monkeypatch) -> None:
+    import asyncio
+
+    from app.models.schemas import CareDocument, ValidationStatus
+    from app.services import extraction
+
+    text = "Take metformin 1/2 tablet twice a day"
+
+    async def fake_provider(document, usage_callback=None):
+        return [
+            {
+                "raw_name": "metformin",
+                "dose": "1/2",
+                "unit": "tablet",
+                "pattern_type": "fixed",
+                "times_per_day": 0,
+                "interval_hours": None,
+                "raw_frequency": "twice a day",
+                "timing": [],
+                "route": None,
+                "duration": None,
+                "action": None,
+                "warning": None,
+                "evidence_span": text,
+            }
+        ]
+
+    monkeypatch.setattr(extraction, "_call_anthropic", fake_provider)
+    document = CareDocument(
+        document_id="d1", document_type="note", document_date="2026-01-01", raw_text=text
+    )
+    result = asyncio.run(extraction.extract_document(document, False))
+    assert len(result) == 1
+    assert result[0].validation_status == ValidationStatus.INSUFFICIENT_INFORMATION
+    assert result[0].dose is None

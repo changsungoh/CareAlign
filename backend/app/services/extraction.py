@@ -4,6 +4,7 @@ from collections.abc import Callable
 from itertools import count
 
 import httpx
+from pydantic import ValidationError
 
 from app.core.config import settings
 from app.models.schemas import (
@@ -17,7 +18,7 @@ from app.models.schemas import (
     Timing,
     ValidationStatus,
 )
-from app.services.evidence import verify_evidence
+from app.services.evidence import dose_supported_by_evidence, verify_evidence
 from app.services.normalization import normalize_medication, normalize_route
 from app.services.provider_guard import provider_circuit
 from app.services.rxnorm import rxnorm_client
@@ -264,12 +265,38 @@ async def extract_document(
             status = ValidationStatus.NEEDS_REVIEW
         if route_raw and route_normalized is None:
             status = ValidationStatus.INSUFFICIENT_INFORMATION
+        # Quote exists but does not contain the structured dose: never auto-validate.
+        if status == ValidationStatus.VALIDATED and not dose_supported_by_evidence(
+            evidence, item.get("dose"), item.get("unit")
+        ):
+            status = ValidationStatus.NEEDS_REVIEW
         pattern_raw = item.get("pattern_type", "unsupported")
         try:
             pattern = PatternType(pattern_raw)
         except ValueError:
             pattern = PatternType.UNSUPPORTED
         if pattern not in {PatternType.FIXED, PatternType.INTERVAL}:
+            status = ValidationStatus.INSUFFICIENT_INFORMATION
+        # A single malformed provider value ("1/2", "5-10", 0 times/day) must degrade that
+        # one instruction to "insufficient information", never abort the whole analysis.
+        dose: Dose | None = None
+        if item.get("dose") is not None:
+            try:
+                dose = Dose(raw_value=str(item["dose"]), raw_unit=item.get("unit"))
+            except (ValidationError, ValueError):
+                status = ValidationStatus.INSUFFICIENT_INFORMATION
+        raw_frequency = str(item.get("raw_frequency") or "not stated")[:500]
+        try:
+            frequency = Frequency(
+                pattern_type=pattern,
+                times_per_day=item.get("times_per_day"),
+                interval_hours=item.get("interval_hours"),
+                raw_expression=raw_frequency,
+            )
+        except (ValidationError, ValueError):
+            frequency = Frequency(
+                pattern_type=PatternType.UNSUPPORTED, raw_expression=raw_frequency
+            )
             status = ValidationStatus.INSUFFICIENT_INFORMATION
         output.append(
             Instruction(
@@ -292,18 +319,8 @@ async def extract_document(
                     rxnorm_api_version=rxnorm_api_version,
                     lookup_status=lookup_status,
                 ),
-                dose=Dose(
-                    raw_value=str(item["dose"]) if item.get("dose") is not None else None,
-                    raw_unit=item.get("unit"),
-                )
-                if item.get("dose") is not None
-                else None,
-                frequency=Frequency(
-                    pattern_type=pattern,
-                    times_per_day=item.get("times_per_day"),
-                    interval_hours=item.get("interval_hours"),
-                    raw_expression=str(item.get("raw_frequency", "not stated")),
-                ),
+                dose=dose,
+                frequency=frequency,
                 timing=Timing(
                     values=item.get("timing") or [],
                     raw_expression=", ".join(item.get("timing") or []) or None,

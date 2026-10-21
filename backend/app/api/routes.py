@@ -1,3 +1,4 @@
+import asyncio
 import hashlib
 import json
 import logging
@@ -115,10 +116,13 @@ async def analyze(
     if payload.documents != sorted(payload.documents, key=lambda item: item.document_date):
         raise HTTPException(422, "Documents must be ordered from oldest to newest.")
     try:
-        instruction_groups = [
-            await extract_document(document, settings.demo_mode, record_usage)
-            for document in payload.documents
-        ]
+        # Documents are independent; gather preserves input order for the chronology.
+        instruction_groups = await asyncio.gather(
+            *(
+                extract_document(document, settings.demo_mode, record_usage)
+                for document in payload.documents
+            )
+        )
     except Exception as error:
         # Record only operational metadata. Never log document text, provider
         # response bodies, request headers, or API keys.

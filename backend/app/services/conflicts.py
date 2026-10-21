@@ -1,5 +1,6 @@
 from collections import defaultdict
 from dataclasses import dataclass, field
+from decimal import Decimal
 from itertools import count
 
 from app.core.config import settings
@@ -92,9 +93,11 @@ def detect_conflicts(
 
     for medication_id, raw_items in groups.items():
         items = sorted(raw_items, key=lambda item: order[item.document_id])
-        by_doc = {item.document_id: item for item in items}
+        present = {item.document_id for item in items}
         explicit_action = any((item.action or "").casefold() in {"stop", "hold"} for item in items)
-        missing = [document_id for document_id in ordered_document_ids if document_id not in by_doc]
+        missing = [
+            document_id for document_id in ordered_document_ids if document_id not in present
+        ]
         if missing and not explicit_action:
             collect(
                 medication_id,
@@ -105,65 +108,108 @@ def detect_conflicts(
                 0.9,
             )
 
-        for left, right in zip(items, items[1:], strict=False):
-            transition = f"{left.document_id} → {right.document_id}"
-            if (
-                left.dose
-                and right.dose
-                and left.dose.raw_value
-                and right.dose.raw_value
-                and left.dose.raw_unit
-                and right.dose.raw_unit
-            ):
-                left_mass = normalize_mass_to_mg(left.dose.raw_value, left.dose.raw_unit)
-                right_mass = normalize_mass_to_mg(right.dose.raw_value, right.dose.raw_unit)
-                if left_mass is None or right_mass is None:
+        # One medication may legitimately appear several times in a single document
+        # (e.g. 500 mg morning + 1000 mg evening). Compare consecutive *documents*,
+        # never entries of the same document with each other.
+        per_document: list[list[Instruction]] = []
+        for document_id in ordered_document_ids:
+            entries = [item for item in items if item.document_id == document_id]
+            if entries:
+                per_document.append(entries)
+        for left_entries, right_entries in zip(per_document, per_document[1:], strict=False):
+            both = left_entries + right_entries
+            transition = f"{left_entries[0].document_id} → {right_entries[0].document_id}"
+
+            def dose_signature(entries: list[Instruction]) -> list[tuple[str, str]]:
+                return [
+                    (item.dose.raw_value, item.dose.raw_unit)
+                    for item in entries
+                    if item.dose and item.dose.raw_value and item.dose.raw_unit
+                ]
+
+            def show(signature: list[tuple[str, str]]) -> str:
+                return " + ".join(f"{value} {unit}" for value, unit in signature)
+
+            left_doses, right_doses = dose_signature(left_entries), dose_signature(right_entries)
+            if left_doses and right_doses:
+                left_mass = [normalize_mass_to_mg(v, u) for v, u in left_doses]
+                right_mass = [normalize_mass_to_mg(v, u) for v, u in right_doses]
+                if None in left_mass or None in right_mass:
+                    # Non-mass units (tablet, mL, …) are only comparable when written identically.
+                    same_text = sorted(
+                        (Decimal(v), u.casefold().strip()) for v, u in left_doses
+                    ) == sorted((Decimal(v), u.casefold().strip()) for v, u in right_doses)
+                    if not same_text:
+                        collect(
+                            medication_id,
+                            ConflictType.DOSE,
+                            both,
+                            f"{transition}: units cannot be safely compared",
+                            0.4,
+                        )
+                elif sorted(left_mass) != sorted(right_mass):
                     collect(
                         medication_id,
                         ConflictType.DOSE,
-                        [left, right],
-                        f"{transition}: units cannot be safely compared",
-                        0.4,
+                        both,
+                        f"{transition}: {show(left_doses)} → {show(right_doses)}",
                     )
-                elif left_mass != right_mass:
-                    collect(
-                        medication_id,
-                        ConflictType.DOSE,
-                        [left, right],
-                        f"{transition}: {left.dose.raw_value} {left.dose.raw_unit} → "
-                        f"{right.dose.raw_value} {right.dose.raw_unit}",
-                    )
-            left_frequency, right_frequency = left.frequency, right.frequency
+            elif bool(left_doses) != bool(right_doses):
+                # A dose that appears or disappears must never end as "no conflict".
+                collect(
+                    medication_id,
+                    ConflictType.DOSE,
+                    both,
+                    f"{transition}: a dose is stated in only one of the two records",
+                    0.9,
+                )
+
             comparable = {"fixed", "interval"}
+            left_freqs = [i for i in left_entries if i.frequency]
+            right_freqs = [i for i in right_entries if i.frequency]
             if (
-                left_frequency
-                and right_frequency
-                and left_frequency.pattern_type.value in comparable
-                and right_frequency.pattern_type.value in comparable
+                left_freqs
+                and right_freqs
+                and all(
+                    i.frequency.pattern_type.value in comparable for i in left_freqs + right_freqs
+                )
             ):
-                left_value = _canonical_frequency(left)
-                right_value = _canonical_frequency(right)
-                if left_value is not None and right_value is not None and left_value != right_value:
+                left_values = [_canonical_frequency(i) for i in left_freqs]
+                right_values = [_canonical_frequency(i) for i in right_freqs]
+                if (
+                    None not in left_values
+                    and None not in right_values
+                    and sorted(left_values) != sorted(right_values)
+                ):
                     collect(
                         medication_id,
                         ConflictType.FREQUENCY,
-                        [left, right],
-                        f"{transition}: '{left_frequency.raw_expression}' → "
-                        f"'{right_frequency.raw_expression}'",
+                        both,
+                        f"{transition}: "
+                        + " + ".join(f"'{i.frequency.raw_expression}'" for i in left_freqs)
+                        + " → "
+                        + " + ".join(f"'{i.frequency.raw_expression}'" for i in right_freqs),
                     )
-            if left.route and right.route and left.route.normalized != right.route.normalized:
+
+            left_routes = {i.route.normalized for i in left_entries if i.route}
+            right_routes = {i.route.normalized for i in right_entries if i.route}
+            if left_routes and right_routes and left_routes != right_routes:
                 collect(
                     medication_id,
                     ConflictType.ROUTE,
-                    [left, right],
+                    both,
                     f"{transition}: administration routes differ",
                 )
-            if left.action and right.action and left.action.casefold() != right.action.casefold():
+
+            left_actions = {i.action.casefold() for i in left_entries if i.action}
+            right_actions = {i.action.casefold() for i in right_entries if i.action}
+            if left_actions and right_actions and left_actions != right_actions:
                 collect(
                     medication_id,
                     ConflictType.ACTION,
-                    [left, right],
-                    f"{transition}: {left.action} → {right.action}",
+                    both,
+                    f"{transition}: {' + '.join(sorted(left_actions))} → "
+                    f"{' + '.join(sorted(right_actions))}",
                 )
 
     serial = count(1)

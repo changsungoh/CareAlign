@@ -93,3 +93,51 @@ def test_missing_middle_document_yields_one_longitudinal_omission() -> None:
     )
     assert len(conflicts) == 1
     assert conflicts[0].conflict_type == "possible_omission"
+
+
+def _split_dose(identifier: str, document: str, dose: str | None) -> Instruction:
+    item = instruction(identifier, document, 2)
+    item.dose = Dose(raw_value=dose, raw_unit="mg") if dose else None
+    return item
+
+
+def test_same_document_entries_are_not_compared_with_each_other() -> None:
+    # 500 mg morning + 1000 mg evening in both records must not produce a flag.
+    conflicts = detect_conflicts(
+        [
+            _split_dose("a1", "old", "500"),
+            _split_dose("a2", "old", "1000"),
+            _split_dose("b1", "new", "500"),
+            _split_dose("b2", "new", "1000"),
+        ],
+        ["old", "new"],
+    )
+    assert conflicts == []
+
+
+def test_changed_split_regimen_is_still_flagged() -> None:
+    conflicts = detect_conflicts(
+        [
+            _split_dose("a1", "old", "500"),
+            _split_dose("a2", "old", "1000"),
+            _split_dose("b1", "new", "500"),
+            _split_dose("b2", "new", "500"),
+        ],
+        ["old", "new"],
+    )
+    assert [c.conflict_type for c in conflicts] == ["dose_difference"]
+
+
+def test_dose_that_disappears_is_never_silent() -> None:
+    conflicts = detect_conflicts(
+        [_split_dose("a", "old", "500"), _split_dose("b", "new", None)], ["old", "new"]
+    )
+    assert [c.conflict_type for c in conflicts] == ["dose_difference"]
+    assert "only one of the two records" in conflicts[0].summary
+
+
+def test_identical_non_mass_dose_is_not_flagged() -> None:
+    old, new = _split_dose("a", "old", None), _split_dose("b", "new", None)
+    for item in (old, new):
+        item.dose = Dose(raw_value="1", raw_unit="tablet")
+    assert detect_conflicts([old, new], ["old", "new"]) == []
