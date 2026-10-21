@@ -13,6 +13,22 @@ from app.models.schemas import (
 )
 
 
+def _normalize_text(value: str) -> str:
+    """Lowercase, keep alphanumerics and decimal points inside numbers only."""
+    text = re.sub(r"[^a-z0-9.]+", " ", value.casefold())
+    return re.sub(r"(?<!\d)\.|\.(?!\d)", " ", text)
+
+
+def _tokens(value: str) -> list[str]:
+    # Single-character words ("a") are noise, but single digits are doses ("5 mg").
+    return [t for t in _normalize_text(value).split() if len(t) > 1 or t.isdigit()]
+
+
+def _contains_token(haystack: str, token: str) -> bool:
+    """Whole-token match so that "10" is not satisfied by "100" or "5" by "50"."""
+    return re.search(rf"(?<![a-z0-9.]){re.escape(token)}(?![a-z0-9.])", haystack) is not None
+
+
 def metadata() -> AnalysisMetadata:
     return AnalysisMetadata(
         app_version=settings.app_version,
@@ -69,15 +85,11 @@ def evaluate_teachback(
             needs_human_review=True,
             metadata=metadata(),
         )
-    normalized = re.sub(r"[^a-z0-9.]+", " ", response.casefold())
+    normalized = _normalize_text(response)
     findings: list[TeachBackFinding] = []
     for item in checklist:
-        tokens = [
-            token
-            for token in re.sub(r"[^a-z0-9.]+", " ", item.expected_value.casefold()).split()
-            if len(token) > 1
-        ]
-        matched = bool(tokens) and all(token in normalized for token in tokens)
+        tokens = _tokens(item.expected_value)
+        matched = bool(tokens) and all(_contains_token(normalized, token) for token in tokens)
         findings.append(
             TeachBackFinding(
                 item_id=item.item_id,

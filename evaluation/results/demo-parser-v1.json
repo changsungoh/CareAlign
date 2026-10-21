@@ -4,7 +4,7 @@
   "versions": {
     "dataset": "synthetic-eval-v1",
     "prompt": "normalization-v1",
-    "rules": "longitudinal-rules-v2",
+    "rules": "longitudinal-rules-v4",
     "model": "transparent-demo-parser"
   },
   "cases": 90,
@@ -30,6 +30,8 @@
     "deterministic_conflict_recall": 1.0,
     "deterministic_pattern_containment": 1.0,
     "deterministic_teachback_false_missing_rate": 0.0,
+    "deterministic_teachback_false_correct_rate": 0.0,
+    "teachback_false_correct_checks": 66,
     "deterministic_security_containment": 1.0,
     "llm_calls": 0
   },
