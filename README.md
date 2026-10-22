@@ -40,6 +40,11 @@ The repository now contains the end-to-end hackathon MVP:
 - request-correlated structured logs, provider circuit breaker, separated rate/budget guards,
   safe failure states, accessibility controls;
 - 90 versioned synthetic evaluation cases, backend unit/integration tests and Playwright E2E.
+- evidence/field consistency checks: a structured dose, frequency, route or action that its own
+  evidence quote contradicts is never auto-validated, and PRN/taper/non-daily wording extracted as a
+  fixed schedule is downgraded to "insufficient information";
+- a deterministic atypical-schedule robustness suite (40 simulated-provider cases) and a teach-back
+  false-correct gate, both enforced in CI through `pytest`;
 - SHA-256 release manifest for safety-critical prompt, rules, schemas and evaluation artifacts.
 
 ## Privacy boundary
@@ -90,6 +95,15 @@ Run tests:
 ```bash
 cd backend
 uv run pytest
+```
+
+Run the deterministic evaluation gates from the repository root (none of them calls an LLM):
+
+```bash
+uv run --project backend python evaluation/evaluate.py            # 90-case component regression
+uv run --project backend python evaluation/evaluate_atypical.py   # atypical-schedule robustness
+uv run --project backend python evaluation/evaluate_rxnorm.py     # offline RxNorm contract
+uv run --project backend python scripts/release_manifest.py --verify
 ```
 
 To run the safe bundled demonstration without a provider key, set `DEMO_MODE=true`. It supports
@@ -149,6 +163,23 @@ parser, rule engine, and teach-back logic. Its perfect synthetic result must not
 live-AI performance. The report is published separately as
 [demo-parser-v1.json](evaluation/results/demo-parser-v1.json).
 
+The same script also reports a teach-back **false-correct** rate. For every teach-back case it
+builds adversarial twins of a correct answer whose dose is multiplied by ten, incremented by one, or
+omitted, and requires that none of them is judged correct. Teach-back matching is whole-token and
+number-aware, so a stated "100 mg" does not satisfy "10 mg" and "mg" alone does not satisfy
+"5 mg".
+
+`evaluation/evaluate_atypical.py` (`cases/atypical-v1.jsonl`, 40 cases, separate from the 90-case v1
+contract) sends author-written *simulated provider outputs* through the real extraction pipeline:
+PRN, taper, every-other-day, range and conditional schedules; schedules the provider mislabelled as
+fixed; and structured values that contradict their own evidence quote; plus correctly extracted
+instructions with varied wording. Its gates require that no unsafe case stays `validated` and that at
+most 10% of correct cases are wrongly downgraded. Before the field/evidence checks existed, 16 of the
+26 unsafe cases stayed `validated`; the gate now requires 0. These are simulated outputs labelled by the
+same author as the rules, so the result is engineering evidence, not a measure of live-model
+behaviour or independent validation. The report is
+[atypical-v1.json](evaluation/results/atypical-v1.json).
+
 A cost-confirmed live evaluation using `claude-haiku-4-5-20251001` completed all 85 functional
 cases with 128 provider extractions and no failed cases. It used 103,389 input tokens and 13,479
 output tokens, with an estimated total cost of $0.170784 ($0.002009 per completed case). On this
@@ -184,6 +215,11 @@ this process can reduce recall bias but is not independent external review.
 - PRN, conditional, taper, range, and other complex dosing patterns are preserved as source text
   and routed to review. Future work may separately extract PRN maximum dose/frequency, conditional
   thresholds, and taper-phase context; the MVP does not compare them.
+- Structured fields are checked against the quote that supports them. The policy only acts on
+  *contradictions*: a value the quote does not mention is left alone, but a dose, frequency,
+  interval, route or action the quote visibly contradicts is sent to review. These are pattern
+  checks, so ambiguous wording errs toward review rather than validation, and correctly extracted
+  documents may occasionally be marked "insufficient information".
 - The prototype is not configured or represented as HIPAA compliant.
 - Demo medication aliases are deliberately limited; similar ingredients with different salts or
   formulations are not collapsed. The FHIR importer is a local, read-only interoperability
@@ -237,6 +273,11 @@ The repository, prompts, rules, synthetic fixtures and limitations are disclosed
 - Backend: [https://carealign-api.onrender.com](https://carealign-api.onrender.com)
 - Production uses `DEMO_MODE=false`, `DEBUG_LOG_RAW=false`, and the exact Vercel origin in CORS.
 - The Anthropic key is stored only as a Render secret and is never exposed to the frontend.
+- Rate limiting keys on the socket peer address by default. Behind a reverse proxy that is the
+  proxy's address, so all users would share one allowance. Set `TRUSTED_PROXY_HOPS` to the number of
+  trusted proxies in front of the API (for example `1`) to key on the matching `X-Forwarded-For`
+  entry, read from the right so client-supplied prefixes are ignored. Leave it at `0` if you are not
+  sure of the hop count, and verify it after deployment.
 
 After both URLs exist, run the fail-fast release check:
 
