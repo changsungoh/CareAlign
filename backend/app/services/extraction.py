@@ -24,7 +24,7 @@ from app.services.evidence import (
     verify_evidence,
 )
 from app.services.normalization import normalize_medication, normalize_route
-from app.services.provider_guard import provider_circuit
+from app.services.provider_guard import provider_auth, provider_circuit
 from app.services.rxnorm import rxnorm_client
 
 SYSTEM_PROMPT = """You extract medication instructions from synthetic care documents.
@@ -124,6 +124,7 @@ async def _call_anthropic(
                 "https://api.anthropic.com/v1/messages", json=payload, headers=headers
             )
             response.raise_for_status()
+        provider_auth.record_accepted()
         body = response.json()
         if usage_callback is not None:
             usage_callback(body.get("usage", {}))
@@ -133,7 +134,9 @@ async def _call_anthropic(
         if text.startswith("```"):
             text = re.sub(r"^```(?:json)?|```$", "", text, flags=re.MULTILINE).strip()
         instructions = json.loads(text)["instructions"]
-    except Exception:
+    except Exception as error:
+        if isinstance(error, httpx.HTTPStatusError) and error.response.status_code in {401, 403}:
+            provider_auth.record_rejected()
         provider_circuit.record_failure()
         raise
     provider_circuit.record_success()

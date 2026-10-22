@@ -244,6 +244,7 @@ class ReadinessResponse(StrictModel):
     status: str
     provider_mode: str
     provider_circuit: str
+    provider_auth: str = "unknown"
     retry_after_seconds: float = Field(ge=0)
     release_sha: str
 

@@ -28,7 +28,7 @@ from app.models.schemas import (
 from app.services.conflicts import detect_conflicts
 from app.services.extraction import extract_document
 from app.services.fhir import FHIRImportError, import_fhir_resource
-from app.services.provider_guard import CircuitOpenError, provider_circuit
+from app.services.provider_guard import CircuitOpenError, provider_auth, provider_circuit
 from app.services.rate_limit import enforce_analysis_budget, enforce_rate_limit
 from app.services.teachback import evaluate_teachback
 
@@ -47,11 +47,14 @@ def health() -> HealthResponse:
 )
 def readiness() -> ReadinessResponse | JSONResponse:
     snapshot = provider_circuit.snapshot()
+    auth = provider_auth.snapshot()
     ready = settings.provider_mode in {"live", "demo"} and snapshot.state == "closed"
+    ready = ready and auth != "failed"
     result = ReadinessResponse(
         status="ready" if ready else "degraded",
         provider_mode=settings.provider_mode,
         provider_circuit=snapshot.state,
+        provider_auth=auth,
         retry_after_seconds=snapshot.retry_after_seconds,
         release_sha=settings.deployment_revision,
     )

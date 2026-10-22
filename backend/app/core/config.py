@@ -24,6 +24,9 @@ class Settings(BaseSettings):
     anthropic_api_key: str = ""
     llm_model: str = "claude-haiku-4-5-20251001"
     daily_request_limit: int = 250
+    # Per-client daily cap on live analyses; 0 disables. Applied only when the client is
+    # identifiable (see rate_limit.client_is_identifiable).
+    per_client_daily_limit: int = 40
     confidence_threshold: float = 0.70
     rxnorm_enabled: bool = False
     rxnorm_base_url: str = "https://rxnav.nlm.nih.gov/REST"

@@ -60,6 +60,36 @@ class ProviderCircuitBreaker:
         self.record_success()
 
 
+class ProviderAuthState:
+    """Remember whether the provider rejected our credentials (HTTP 401/403).
+
+    A revoked or expired key does not recover by itself and fails every analysis, so it is
+    surfaced through readiness: an external monitor can alert before users notice.
+    """
+
+    def __init__(self) -> None:
+        self._status = "unknown"
+        self._lock = Lock()
+
+    def record_rejected(self) -> None:
+        with self._lock:
+            self._status = "failed"
+
+    def record_accepted(self) -> None:
+        with self._lock:
+            self._status = "ok"
+
+    def snapshot(self) -> str:
+        with self._lock:
+            return self._status
+
+    def reset(self) -> None:
+        with self._lock:
+            self._status = "unknown"
+
+
+provider_auth = ProviderAuthState()
+
 provider_circuit = ProviderCircuitBreaker(
     settings.provider_failure_threshold,
     settings.provider_recovery_seconds,

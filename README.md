@@ -278,6 +278,12 @@ The repository, prompts, rules, synthetic fixtures and limitations are disclosed
   trusted proxies in front of the API (for example `1`) to key on the matching `X-Forwarded-For`
   entry, read from the right so client-supplied prefixes are ignored. Leave it at `0` if you are not
   sure of the hop count, and verify it after deployment.
+- `PER_CLIENT_DAILY_LIMIT` (default 40) keeps one client from using the whole `DAILY_REQUEST_LIMIT`.
+  It applies only when the client is identifiable (`TRUSTED_PROXY_HOPS` set, or a public socket
+  address), so an undeclared proxy cannot make the whole service share one client's allowance.
+- `GET /api/readiness` reports `provider_auth` (`unknown`, `ok`, `failed`). A rejected API key turns
+  readiness into `503`, so an uptime monitor on that endpoint catches an expired key. See the
+  [deployment runbook](docs/DEPLOYMENT_RUNBOOK.md#provider-credential-lifecycle).
 
 After both URLs exist, run the fail-fast release check:
 

@@ -32,3 +32,14 @@ def test_circuit_recovers_after_cooldown(monkeypatch) -> None:
     now = 106.0
     circuit.before_call()
     assert circuit.snapshot().state == "closed"
+
+
+def test_auth_state_tracks_rejected_and_accepted_credentials() -> None:
+    from app.services.provider_guard import ProviderAuthState
+
+    state = ProviderAuthState()
+    assert state.snapshot() == "unknown"
+    state.record_rejected()
+    assert state.snapshot() == "failed"
+    state.record_accepted()
+    assert state.snapshot() == "ok"

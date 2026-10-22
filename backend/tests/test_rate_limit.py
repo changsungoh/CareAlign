@@ -91,3 +91,52 @@ def test_idle_client_keys_are_dropped(monkeypatch) -> None:
     rate_limit._requests["198.51.100.1"].append(time.time() - 120)
     rate_limit.enforce_rate_limit(request("198.51.100.2"))
     assert "198.51.100.1" not in rate_limit._requests
+
+
+def _client(ip: str) -> Request:
+    return Request(
+        {
+            "type": "http",
+            "client": ("10.0.0.1", 1234),
+            "headers": [(b"x-forwarded-for", ip.encode())],
+        }
+    )
+
+
+def test_one_client_cannot_exhaust_the_shared_daily_budget(monkeypatch) -> None:
+    monkeypatch.setattr(settings, "demo_mode", False)
+    monkeypatch.setattr(settings, "trusted_proxy_hops", 1)
+    monkeypatch.setattr(settings, "rate_limit_per_minute", 100)
+    monkeypatch.setattr(settings, "daily_request_limit", 10)
+    monkeypatch.setattr(settings, "per_client_daily_limit", 2)
+    rate_limit.enforce_analysis_budget(_client("203.0.113.5"))
+    rate_limit.enforce_analysis_budget(_client("203.0.113.5"))
+    with pytest.raises(HTTPException) as error:
+        rate_limit.enforce_analysis_budget(_client("203.0.113.5"))
+    assert error.value.status_code == 429
+    # Another client is unaffected and the shared budget was not consumed by the blocked call.
+    rate_limit.enforce_analysis_budget(_client("203.0.113.6"))
+    assert len(rate_limit._daily) == 3
+
+
+def test_per_client_cap_is_skipped_when_every_user_shares_a_private_proxy_address(
+    monkeypatch,
+) -> None:
+    monkeypatch.setattr(settings, "demo_mode", False)
+    monkeypatch.setattr(settings, "trusted_proxy_hops", 0)
+    monkeypatch.setattr(settings, "rate_limit_per_minute", 100)
+    monkeypatch.setattr(settings, "daily_request_limit", 10)
+    monkeypatch.setattr(settings, "per_client_daily_limit", 1)
+    for _ in range(3):  # would be blocked if the proxy address were treated as one client
+        rate_limit.enforce_analysis_budget(request("10.237.26.132"))
+    assert len(rate_limit._daily) == 3
+
+
+def test_per_client_cap_can_be_disabled(monkeypatch) -> None:
+    monkeypatch.setattr(settings, "demo_mode", False)
+    monkeypatch.setattr(settings, "trusted_proxy_hops", 1)
+    monkeypatch.setattr(settings, "rate_limit_per_minute", 100)
+    monkeypatch.setattr(settings, "daily_request_limit", 10)
+    monkeypatch.setattr(settings, "per_client_daily_limit", 0)
+    for _ in range(4):
+        rate_limit.enforce_analysis_budget(_client("203.0.113.5"))
