@@ -32,7 +32,9 @@ The repository now contains the end-to-end hackathon MVP:
   states, version provenance, route and mass-unit normalization;
 - read-only FHIR R4 import for `MedicationRequest` and `MedicationStatement`, grouped by source date
   with field-level provenance and no patient-identity ingestion;
-- deterministic dose, frequency, route, action and possible-omission checks;
+- deterministic dose, frequency, route, action, timing and possible-omission checks, including
+  schedule-type changes (scheduled vs as-needed, taper, every-other-day) and as-needed interval
+  changes (`timing_difference` is a new conflict type);
 - source-linked clarification questions with copy, print and download actions;
 - user-only resolution notes in browser `sessionStorage`;
 - deterministic teach-back checklists that exclude unresolved instructions;
@@ -102,6 +104,7 @@ Run the deterministic evaluation gates from the repository root (none of them ca
 ```bash
 uv run --project backend python evaluation/evaluate.py            # 90-case component regression
 uv run --project backend python evaluation/evaluate_atypical.py   # atypical-schedule robustness
+uv run --project backend python evaluation/evaluate_longitudinal.py # schedule-type / timing change detection
 uv run --project backend python evaluation/evaluate_rxnorm.py     # offline RxNorm contract
 uv run --project backend python scripts/release_manifest.py --verify
 ```

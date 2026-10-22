@@ -1,0 +1,12 @@
+{
+  "evaluation_type": "deterministic_longitudinal_changes",
+  "disclaimer": "No LLM was called. Provider outputs are author-written simulations; synthetic engineering evidence, not independent review or clinical validation.",
+  "cases": 14,
+  "metrics": {
+    "precision": 1.0,
+    "recall": 1.0,
+    "llm_calls": 0
+  },
+  "failures": [],
+  "gates_passed": true
+}

@@ -141,3 +141,92 @@ def test_identical_non_mass_dose_is_not_flagged() -> None:
     for item in (old, new):
         item.dose = Dose(raw_value="1", raw_unit="tablet")
     assert detect_conflicts([old, new], ["old", "new"]) == []
+
+
+def _kind(
+    identifier: str,
+    document: str,
+    pattern: PatternType,
+    *,
+    times: int | None = None,
+    interval: int | None = None,
+    timing: list[str] | None = None,
+) -> Instruction:
+    from app.models.schemas import Timing
+
+    return Instruction(
+        instruction_id=identifier,
+        document_id=document,
+        medication=MedicationIdentity(raw_name="acetaminophen", normalized_id="acetaminophen"),
+        dose=Dose(raw_value="500", raw_unit="mg"),
+        frequency=Frequency(
+            pattern_type=pattern,
+            times_per_day=times,
+            interval_hours=interval,
+            raw_expression="as written",
+        ),
+        timing=Timing(values=timing or [], raw_expression=", ".join(timing or []) or None),
+        evidence_span="acetaminophen 500 mg",
+        validation_status=ValidationStatus.VALIDATED,
+    )
+
+
+def _types(old: Instruction, new: Instruction) -> list[str]:
+    return [c.conflict_type.value for c in detect_conflicts([old, new], ["old", "new"])]
+
+
+def test_scheduled_to_as_needed_is_a_frequency_difference() -> None:
+    old = _kind("a", "old", PatternType.FIXED, times=2)
+    new = _kind("b", "new", PatternType.PRN)
+    assert _types(old, new) == ["frequency_difference"]
+    reverse_old = new.model_copy(update={"document_id": "old"})
+    reverse_new = old.model_copy(update={"document_id": "new"})
+    assert _types(reverse_old, reverse_new) == ["frequency_difference"]
+
+
+def test_scheduled_to_taper_and_every_other_day_are_flagged() -> None:
+    old = _kind("a", "old", PatternType.FIXED, times=1)
+    assert _types(old, _kind("b", "new", PatternType.TAPER)) == ["frequency_difference"]
+    assert _types(old, _kind("c", "new", PatternType.EVERY_OTHER_DAY)) == ["frequency_difference"]
+
+
+def test_same_unsupported_or_same_kind_is_not_reported_as_a_change() -> None:
+    fixed = _kind("a", "old", PatternType.FIXED, times=1)
+    # The model could not classify the schedule: that says nothing about a change.
+    assert _types(fixed, _kind("b", "new", PatternType.UNSUPPORTED)) == []
+    assert _types(_kind("c", "old", PatternType.PRN), _kind("d", "new", PatternType.PRN)) == []
+
+
+def test_as_needed_interval_change_is_flagged_but_missing_interval_is_not() -> None:
+    six = _kind("a", "old", PatternType.PRN, interval=6)
+    eight = _kind("b", "new", PatternType.PRN, interval=8)
+    assert _types(six, eight) == ["frequency_difference"]
+    assert _types(six, _kind("c", "new", PatternType.PRN)) == []
+
+
+def test_timing_change_is_flagged() -> None:
+    old = _kind("a", "old", PatternType.FIXED, times=1, timing=["morning"])
+    new = _kind("b", "new", PatternType.FIXED, times=1, timing=["at bedtime"])
+    conflicts = detect_conflicts([old, new], ["old", "new"])
+    assert [c.conflict_type.value for c in conflicts] == ["timing_difference"]
+    assert conflicts[0].status == "validated"
+
+
+def test_equivalent_timing_spellings_are_not_a_change() -> None:
+    old = _kind("a", "old", PatternType.FIXED, times=1, timing=["bedtime"])
+    new = _kind("b", "new", PatternType.FIXED, times=1, timing=["at night"])
+    assert _types(old, new) == []
+
+
+def test_timing_present_in_only_one_record_is_not_a_change() -> None:
+    old = _kind("a", "old", PatternType.FIXED, times=1, timing=["morning"])
+    new = _kind("b", "new", PatternType.FIXED, times=1)
+    assert _types(old, new) == []
+
+
+def test_unrecognised_timing_spelling_goes_to_review_not_validated() -> None:
+    old = _kind("a", "old", PatternType.FIXED, times=1, timing=["after lunch"])
+    new = _kind("b", "new", PatternType.FIXED, times=1, timing=["after dinner"])
+    conflicts = detect_conflicts([old, new], ["old", "new"])
+    assert [c.conflict_type.value for c in conflicts] == ["timing_difference"]
+    assert conflicts[0].status == "needs_review"

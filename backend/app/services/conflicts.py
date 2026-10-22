@@ -49,6 +49,58 @@ def _canonical_frequency(item: Instruction) -> tuple[str, int] | None:
     return ("interval_hours", frequency.interval_hours)
 
 
+_TIMING_CANONICAL = {
+    "morning": {"morning", "am", "in the morning", "every morning", "a.m."},
+    "evening": {"evening", "in the evening", "every evening"},
+    "bedtime": {
+        "bedtime",
+        "at bedtime",
+        "night",
+        "at night",
+        "nightly",
+        "before bed",
+        "every night",
+    },
+    "with_meals": {"with meals", "with food", "with a meal", "with breakfast and dinner"},
+}
+_TIMING_LOOKUP = {alias: name for name, aliases in _TIMING_CANONICAL.items() for alias in aliases}
+
+
+def _timing_values(entries: list[Instruction]) -> tuple[set[str], bool]:
+    """Return the normalised timing values and whether every one is a recognised spelling."""
+    values: set[str] = set()
+    recognised = True
+    for item in entries:
+        for raw in item.timing.values if item.timing else []:
+            folded = " ".join(raw.casefold().split())
+            if not folded:
+                continue
+            if folded in _TIMING_LOOKUP:
+                values.add(_TIMING_LOOKUP[folded])
+            else:
+                values.add(folded)
+                recognised = False
+    return values, recognised
+
+
+def _schedule_kinds(entries: list[Instruction]) -> set[str]:
+    """Schedule families present in a document; unsupported/unknown patterns are left out.
+
+    A model that could not classify a schedule says nothing about whether the schedule changed, so
+    it must not be reported as a change. Fixed and interval schedules form one comparable family.
+    """
+    kinds: set[str] = set()
+    for item in entries:
+        if not item.frequency:
+            continue
+        pattern = item.frequency.pattern_type.value
+        if pattern in {"fixed", "interval"}:
+            kinds.add("scheduled")
+        elif pattern != "unsupported":
+            kinds.add(pattern)
+    return kinds
+
+
 def detect_conflicts(
     instructions: list[Instruction], ordered_document_ids: list[str]
 ) -> list[Conflict]:
@@ -190,6 +242,46 @@ def detect_conflicts(
                         + " → "
                         + " + ".join(f"'{i.frequency.raw_expression}'" for i in right_freqs),
                     )
+
+            left_kinds, right_kinds = _schedule_kinds(left_entries), _schedule_kinds(right_entries)
+            if left_kinds and right_kinds and left_kinds != right_kinds:
+                collect(
+                    medication_id,
+                    ConflictType.FREQUENCY,
+                    both,
+                    f"{transition}: schedule type changed ({' + '.join(sorted(left_kinds))} → "
+                    f"{' + '.join(sorted(right_kinds))})",
+                )
+            elif left_kinds == right_kinds == {"prn"}:
+                left_gap = {i.frequency.interval_hours for i in left_entries if i.frequency} - {
+                    None
+                }
+                right_gap = {i.frequency.interval_hours for i in right_entries if i.frequency} - {
+                    None
+                }
+                if left_gap and right_gap and left_gap != right_gap:
+                    collect(
+                        medication_id,
+                        ConflictType.FREQUENCY,
+                        both,
+                        f"{transition}: as-needed interval "
+                        f"{'/'.join(map(str, sorted(left_gap)))} h → "
+                        f"{'/'.join(map(str, sorted(right_gap)))} h",
+                    )
+
+            left_times, left_known = _timing_values(left_entries)
+            right_times, right_known = _timing_values(right_entries)
+            if left_times and right_times and left_times != right_times:
+                # A timing the vocabulary does not recognise is still a likely change, but the
+                # rule cannot be sure two spellings differ in meaning, so it goes to review.
+                collect(
+                    medication_id,
+                    ConflictType.TIMING,
+                    both,
+                    f"{transition}: timing {' + '.join(sorted(left_times))} → "
+                    f"{' + '.join(sorted(right_times))}",
+                    0.9 if left_known and right_known else 0.6,
+                )
 
             left_routes = {i.route.normalized for i in left_entries if i.route}
             right_routes = {i.route.normalized for i in right_entries if i.route}
