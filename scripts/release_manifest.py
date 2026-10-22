@@ -22,6 +22,8 @@ ARTIFACTS = (
     "backend/app/services/rxnorm.py",
     "backend/app/services/teachback.py",
     "evaluation/cases/synthetic-v1.jsonl",
+    "evaluation/cases/atypical-v1.jsonl",
+    "evaluation/evaluate_atypical.py",
     "evaluation/schema/case.schema.json",
     "evaluation/evaluate_rxnorm.py",
     "evaluation/rxnorm/cases-v1.json",

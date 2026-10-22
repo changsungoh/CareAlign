@@ -18,7 +18,7 @@ class Settings(BaseSettings):
     # Number of trusted reverse-proxy hops (Render/Vercel = 1). 0 = use socket peer address.
     trusted_proxy_hops: int = 0
     prompt_version: str = "normalization-v1"
-    rules_version: str = "longitudinal-rules-v4"
+    rules_version: str = "longitudinal-rules-v5"
     dataset_version: str = "synthetic-eval-v1"
     terminology_policy_version: str = "rxnorm-policy-v2"
     anthropic_api_key: str = ""

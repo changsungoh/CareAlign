@@ -18,7 +18,11 @@ from app.models.schemas import (
     Timing,
     ValidationStatus,
 )
-from app.services.evidence import dose_supported_by_evidence, verify_evidence
+from app.services.evidence import (
+    dose_supported_by_evidence,
+    field_contradictions,
+    verify_evidence,
+)
 from app.services.normalization import normalize_medication, normalize_route
 from app.services.provider_guard import provider_circuit
 from app.services.rxnorm import rxnorm_client
@@ -265,11 +269,6 @@ async def extract_document(
             status = ValidationStatus.NEEDS_REVIEW
         if route_raw and route_normalized is None:
             status = ValidationStatus.INSUFFICIENT_INFORMATION
-        # Quote exists but does not contain the structured dose: never auto-validate.
-        if status == ValidationStatus.VALIDATED and not dose_supported_by_evidence(
-            evidence, item.get("dose"), item.get("unit")
-        ):
-            status = ValidationStatus.NEEDS_REVIEW
         pattern_raw = item.get("pattern_type", "unsupported")
         try:
             pattern = PatternType(pattern_raw)
@@ -277,6 +276,22 @@ async def extract_document(
             pattern = PatternType.UNSUPPORTED
         if pattern not in {PatternType.FIXED, PatternType.INTERVAL}:
             status = ValidationStatus.INSUFFICIENT_INFORMATION
+        # The quote must actually support the structured fields, not merely exist in the source.
+        schedule_issues, value_issues = field_contradictions(
+            evidence,
+            pattern_type=pattern.value,
+            times_per_day=item.get("times_per_day"),
+            interval_hours=item.get("interval_hours"),
+            route_raw=route_raw,
+            action=item.get("action"),
+        )
+        if schedule_issues:
+            status = ValidationStatus.INSUFFICIENT_INFORMATION
+        if status == ValidationStatus.VALIDATED and (
+            value_issues
+            or not dose_supported_by_evidence(evidence, item.get("dose"), item.get("unit"))
+        ):
+            status = ValidationStatus.NEEDS_REVIEW
         # A single malformed provider value ("1/2", "5-10", 0 times/day) must degrade that
         # one instruction to "insufficient information", never abort the whole analysis.
         dose: Dose | None = None
