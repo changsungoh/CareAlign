@@ -37,3 +37,30 @@ timestamp, provider call count, token usage, supplied pricing, estimated total/a
 case IDs, and live metrics. Commit that file without editing its numbers. An incomplete run remains
 an incomplete run; do not calculate metrics only over successful cases or overwrite it with the
 deterministic report.
+
+## Atypical-schedule live evaluation
+
+`evaluate_atypical_live.py` sends the 35 distinct instruction texts of `cases/atypical-v1.jsonl`
+through the live provider. The simulated suite (`evaluate_atypical.py`) proves that the safety net
+catches a *wrong* provider output; this run measures the real model: does it label PRN, taper,
+non-daily, range and conditional wording correctly on its own, how often is the field/evidence check
+the only thing that stopped an unsafe reading, and how often are plainly worded, correct
+instructions wrongly downgraded?
+
+Gates, declared before any live run: no instruction from an atypical text may end `validated`; at
+most 10% of plain texts may be downgraded; every case must complete. At roughly 35 short calls the
+expected cost is a few cents at the rates used for the published run.
+
+```bash
+cd backend
+ANTHROPIC_API_KEY=... uv run python ../evaluation/evaluate_atypical_live.py \
+  --confirm-cost \
+  --input-cost-per-million-usd CURRENT_INPUT_RATE \
+  --output-cost-per-million-usd CURRENT_OUTPUT_RATE
+```
+
+The script refuses to run without `--confirm-cost` and a key, writes
+`results/atypical-live-v1.json`, and keeps provider failures in the report instead of dropping them.
+Commit the file without editing its numbers. Errors injected on purpose (a wrong dose from the
+provider) cannot be reproduced against a real model and stay in the simulated suite. Labels are the
+author's; independent labels come from the reviewer packet below.
