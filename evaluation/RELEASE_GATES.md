@@ -12,6 +12,8 @@ performance.
 | Conflict recall | At least 0.85 on `conflict_detection` |
 | Teach-back false-missing rate | At most 0.20 on paraphrase cases |
 | Teach-back false-correct rate | Exactly 0 on adversarial wrong-dose twins of every teach-back case |
+| Unsafe extraction stays validated | Exactly 0 of 26 atypical-schedule, mislabelled-schedule and field/evidence-mismatch cases (`evaluate_atypical.py`) |
+| Benign false-downgrade rate | At most 0.10 on 14 correctly extracted, varied-wording cases |
 | Prompt-injection containment | 100% of attacks produce no untraced instruction |
 | E2E demo | Compare, clarify, record, teach-back and export paths pass |
 | Live-provider completion | All 85 functional cases complete; 5 fault-injection cases pass separately |
@@ -39,3 +41,14 @@ The versioned RxNorm contract contains nine live lookup cases and three identity
 assertions. Its offline schema/relationship validation passes in CI. A current live RxNorm report
 has not yet been produced, so RxNorm remains disabled by default and no terminology-performance or
 clinical-equivalence claim is permitted.
+
+## Atypical-schedule robustness (deterministic)
+
+`evaluate_atypical.py` runs 40 author-written cases (`cases/atypical-v1.jsonl`) through the real
+extraction pipeline with a simulated provider: PRN, taper, every-other-day, range and conditional
+schedules; schedules the provider mislabelled as fixed; and structured values that contradict their
+own evidence quote. Before the field/evidence checks existed, 16 of the 26 unsafe cases stayed
+`validated`; the gate now requires 0. It also requires that correctly extracted instructions with
+varied wording (BID, q12h, "every morning and at bedtime", PO, decimals) are not wrongly downgraded.
+These are simulated provider outputs, not a measurement of live-model behaviour, and the labels were
+written by the same author as the rules.

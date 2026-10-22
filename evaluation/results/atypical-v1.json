@@ -1,0 +1,34 @@
+{
+  "evaluation_type": "deterministic_atypical_robustness",
+  "disclaimer": "No LLM was called. Provider outputs are author-written simulations; results are synthetic engineering evidence, not independent review or clinical validation.",
+  "cases": 40,
+  "groups": {
+    "atypical_pattern": {
+      "cases": 8,
+      "passed": 8
+    },
+    "mislabelled_schedule": {
+      "cases": 8,
+      "passed": 8
+    },
+    "field_mismatch": {
+      "cases": 10,
+      "passed": 10
+    },
+    "benign_variation": {
+      "cases": 14,
+      "passed": 14
+    }
+  },
+  "metrics": {
+    "unsafe_validated": 0,
+    "benign_false_downgrade_rate": 0.0,
+    "llm_calls": 0
+  },
+  "failures": [],
+  "gates": {
+    "unsafe_validated_equals_zero": true,
+    "benign_false_downgrade_within_limit": true
+  },
+  "gates_passed": true
+}

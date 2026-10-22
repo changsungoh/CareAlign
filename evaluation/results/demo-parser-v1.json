@@ -4,7 +4,7 @@
   "versions": {
     "dataset": "synthetic-eval-v1",
     "prompt": "normalization-v1",
-    "rules": "longitudinal-rules-v4",
+    "rules": "longitudinal-rules-v5",
     "model": "transparent-demo-parser"
   },
   "cases": 90,
