@@ -1,0 +1,569 @@
+{
+  "conflicts": {
+    "C-1087": {
+      "expected": [],
+      "source_id": "conflict-36"
+    },
+    "C-1228": {
+      "expected": [],
+      "source_id": "conflict-27"
+    },
+    "C-1239": {
+      "expected": [],
+      "source_id": "conflict-24"
+    },
+    "C-1327": {
+      "expected": [
+        "frequency_difference"
+      ],
+      "source_id": "conflict-13"
+    },
+    "C-1467": {
+      "expected": [
+        "possible_omission"
+      ],
+      "source_id": "conflict-29"
+    },
+    "C-1511": {
+      "expected": [
+        "possible_omission"
+      ],
+      "source_id": "conflict-05"
+    },
+    "C-1593": {
+      "expected": [
+        "possible_omission"
+      ],
+      "source_id": "conflict-14"
+    },
+    "C-1676": {
+      "expected": [
+        "possible_omission"
+      ],
+      "source_id": "conflict-26"
+    },
+    "C-1693": {
+      "expected": [
+        "possible_omission"
+      ],
+      "source_id": "conflict-35"
+    },
+    "C-1734": {
+      "expected": [
+        "possible_omission"
+      ],
+      "source_id": "conflict-20"
+    },
+    "C-1827": {
+      "expected": [],
+      "source_id": "conflict-33"
+    },
+    "C-1977": {
+      "expected": [
+        "frequency_difference"
+      ],
+      "source_id": "conflict-40"
+    },
+    "C-2966": {
+      "expected": [
+        "possible_omission"
+      ],
+      "source_id": "conflict-17"
+    },
+    "C-3647": {
+      "expected": [
+        "possible_omission"
+      ],
+      "source_id": "conflict-08"
+    },
+    "C-4294": {
+      "expected": [
+        "frequency_difference"
+      ],
+      "source_id": "conflict-01"
+    },
+    "C-4897": {
+      "expected": [
+        "possible_omission"
+      ],
+      "source_id": "conflict-32"
+    },
+    "C-5222": {
+      "expected": [
+        "frequency_difference"
+      ],
+      "source_id": "conflict-19"
+    },
+    "C-5588": {
+      "expected": [],
+      "source_id": "conflict-12"
+    },
+    "C-5601": {
+      "expected": [
+        "frequency_difference"
+      ],
+      "source_id": "conflict-10"
+    },
+    "C-5795": {
+      "expected": [
+        "frequency_difference"
+      ],
+      "source_id": "conflict-31"
+    },
+    "C-5989": {
+      "expected": [],
+      "source_id": "conflict-18"
+    },
+    "C-6048": {
+      "expected": [
+        "frequency_difference"
+      ],
+      "source_id": "conflict-37"
+    },
+    "C-6170": {
+      "expected": [
+        "possible_omission"
+      ],
+      "source_id": "conflict-38"
+    },
+    "C-6181": {
+      "expected": [],
+      "source_id": "conflict-42"
+    },
+    "C-6560": {
+      "expected": [],
+      "source_id": "conflict-09"
+    },
+    "C-6990": {
+      "expected": [
+        "possible_omission"
+      ],
+      "source_id": "conflict-11"
+    },
+    "C-7057": {
+      "expected": [
+        "frequency_difference"
+      ],
+      "source_id": "conflict-25"
+    },
+    "C-7204": {
+      "expected": [
+        "frequency_difference"
+      ],
+      "source_id": "conflict-34"
+    },
+    "C-7328": {
+      "expected": [
+        "frequency_difference"
+      ],
+      "source_id": "conflict-43"
+    },
+    "C-8073": {
+      "expected": [
+        "frequency_difference"
+      ],
+      "source_id": "conflict-07"
+    },
+    "C-8538": {
+      "expected": [],
+      "source_id": "conflict-39"
+    },
+    "C-8670": {
+      "expected": [
+        "frequency_difference"
+      ],
+      "source_id": "conflict-28"
+    },
+    "C-8868": {
+      "expected": [
+        "possible_omission"
+      ],
+      "source_id": "conflict-02"
+    },
+    "C-8944": {
+      "expected": [
+        "frequency_difference"
+      ],
+      "source_id": "conflict-04"
+    },
+    "C-9230": {
+      "expected": [],
+      "source_id": "conflict-03"
+    },
+    "C-9271": {
+      "expected": [
+        "frequency_difference"
+      ],
+      "source_id": "conflict-22"
+    },
+    "C-9381": {
+      "expected": [],
+      "source_id": "conflict-15"
+    },
+    "C-9420": {
+      "expected": [],
+      "source_id": "conflict-21"
+    },
+    "C-9430": {
+      "expected": [
+        "possible_omission"
+      ],
+      "source_id": "conflict-23"
+    },
+    "C-9463": {
+      "expected": [],
+      "source_id": "conflict-30"
+    },
+    "C-9471": {
+      "expected": [],
+      "source_id": "conflict-06"
+    },
+    "C-9649": {
+      "expected": [
+        "frequency_difference"
+      ],
+      "source_id": "conflict-16"
+    },
+    "C-9732": {
+      "expected": [
+        "possible_omission"
+      ],
+      "source_id": "conflict-41"
+    }
+  },
+  "extraction": {
+    "E-1136": {
+      "reference": {
+        "action": null,
+        "dose_unit": "mg",
+        "dose_value": "20",
+        "interval_hours": null,
+        "route": "oral",
+        "schedule_type": "fixed_daily",
+        "times_per_day": 1
+      },
+      "source_id": "ben-14"
+    },
+    "E-1291": {
+      "reference": {
+        "action": null,
+        "dose_unit": "mg",
+        "dose_value": "50",
+        "interval_hours": null,
+        "route": "oral",
+        "schedule_type": "fixed_daily",
+        "times_per_day": 3
+      },
+      "source_id": "fld-05"
+    },
+    "E-1626": {
+      "reference": {
+        "action": "stop",
+        "dose_unit": "mg",
+        "dose_value": "20",
+        "interval_hours": null,
+        "route": "oral",
+        "schedule_type": "fixed_daily",
+        "times_per_day": 1
+      },
+      "source_id": "ben-12"
+    },
+    "E-1924": {
+      "reference": {
+        "schedule_type": "non_daily"
+      },
+      "source_id": "mis-06"
+    },
+    "E-2463": {
+      "reference": {
+        "action": "stop",
+        "dose_unit": "mg",
+        "dose_value": "20",
+        "interval_hours": null,
+        "route": "oral",
+        "schedule_type": "fixed_daily",
+        "times_per_day": 1
+      },
+      "source_id": "fld-09"
+    },
+    "E-3019": {
+      "reference": {
+        "action": null,
+        "dose_unit": "mg",
+        "dose_value": "20",
+        "interval_hours": null,
+        "route": "oral",
+        "schedule_type": "fixed_daily",
+        "times_per_day": 1
+      },
+      "source_id": "ben-06"
+    },
+    "E-3420": {
+      "reference": {
+        "action": null,
+        "dose_unit": "mg",
+        "dose_value": "5",
+        "interval_hours": null,
+        "route": "oral",
+        "schedule_type": "fixed_daily",
+        "times_per_day": 1
+      },
+      "source_id": "ben-08"
+    },
+    "E-3473": {
+      "reference": {
+        "action": "continue",
+        "dose_unit": "mg",
+        "dose_value": "50",
+        "interval_hours": null,
+        "route": "oral",
+        "schedule_type": "fixed_daily",
+        "times_per_day": 1
+      },
+      "source_id": "fld-10"
+    },
+    "E-3485": {
+      "reference": {
+        "action": null,
+        "dose_unit": "mg",
+        "dose_value": "25",
+        "interval_hours": 12,
+        "route": "oral",
+        "schedule_type": "interval",
+        "times_per_day": null
+      },
+      "source_id": "ben-03"
+    },
+    "E-3492": {
+      "reference": {
+        "action": null,
+        "dose_unit": "mg",
+        "dose_value": "500",
+        "interval_hours": null,
+        "route": "oral",
+        "schedule_type": "fixed_daily",
+        "times_per_day": 2
+      },
+      "source_id": "ben-01"
+    },
+    "E-3495": {
+      "reference": {
+        "action": null,
+        "dose_unit": "mg",
+        "dose_value": "5",
+        "interval_hours": null,
+        "route": "oral",
+        "schedule_type": "fixed_daily",
+        "times_per_day": 1
+      },
+      "source_id": "fld-08"
+    },
+    "E-3918": {
+      "reference": {
+        "action": null,
+        "dose_unit": "mg",
+        "dose_value": "1000",
+        "interval_hours": null,
+        "route": "oral",
+        "schedule_type": "fixed_daily",
+        "times_per_day": 2
+      },
+      "source_id": "ben-11"
+    },
+    "E-4027": {
+      "reference": {
+        "schedule_type": "range"
+      },
+      "source_id": "atyp-07"
+    },
+    "E-4769": {
+      "reference": {
+        "action": null,
+        "dose_unit": "g",
+        "dose_value": "0.3",
+        "interval_hours": null,
+        "route": "oral",
+        "schedule_type": "fixed_daily",
+        "times_per_day": 1
+      },
+      "source_id": "ben-10"
+    },
+    "E-5025": {
+      "reference": {
+        "schedule_type": "prn"
+      },
+      "source_id": "mis-01"
+    },
+    "E-5374": {
+      "reference": {
+        "schedule_type": "taper"
+      },
+      "source_id": "mis-03"
+    },
+    "E-5782": {
+      "reference": {
+        "schedule_type": "prn"
+      },
+      "source_id": "atyp-01"
+    },
+    "E-6518": {
+      "reference": {
+        "schedule_type": "prn"
+      },
+      "source_id": "mis-08"
+    },
+    "E-6820": {
+      "reference": {
+        "action": null,
+        "dose_unit": "mg",
+        "dose_value": "10",
+        "interval_hours": null,
+        "route": "oral",
+        "schedule_type": "fixed_daily",
+        "times_per_day": 1
+      },
+      "source_id": "ben-02"
+    },
+    "E-6859": {
+      "reference": {
+        "action": null,
+        "dose_unit": "mg",
+        "dose_value": "10",
+        "interval_hours": null,
+        "route": "oral",
+        "schedule_type": "fixed_daily",
+        "times_per_day": 1
+      },
+      "source_id": "fld-03"
+    },
+    "E-7087": {
+      "reference": {
+        "schedule_type": "conditional"
+      },
+      "source_id": "atyp-06"
+    },
+    "E-7506": {
+      "reference": {
+        "action": null,
+        "dose_unit": "mg",
+        "dose_value": "10",
+        "interval_hours": null,
+        "route": "oral",
+        "schedule_type": "fixed_daily",
+        "times_per_day": 1
+      },
+      "source_id": "ben-09"
+    },
+    "E-7625": {
+      "reference": {
+        "action": null,
+        "dose_unit": "mg",
+        "dose_value": "500",
+        "interval_hours": null,
+        "route": "oral",
+        "schedule_type": "fixed_daily",
+        "times_per_day": 2
+      },
+      "source_id": "fld-01"
+    },
+    "E-8071": {
+      "reference": {
+        "action": "continue",
+        "dose_unit": "mg",
+        "dose_value": "50",
+        "interval_hours": null,
+        "route": "oral",
+        "schedule_type": "fixed_daily",
+        "times_per_day": 1
+      },
+      "source_id": "ben-13"
+    },
+    "E-8076": {
+      "reference": {
+        "schedule_type": "prn"
+      },
+      "source_id": "atyp-02"
+    },
+    "E-8395": {
+      "reference": {
+        "schedule_type": "taper"
+      },
+      "source_id": "atyp-04"
+    },
+    "E-8535": {
+      "reference": {
+        "schedule_type": "prn"
+      },
+      "source_id": "mis-02"
+    },
+    "E-8632": {
+      "reference": {
+        "action": null,
+        "dose_unit": "mg",
+        "dose_value": "500",
+        "interval_hours": null,
+        "route": "oral",
+        "schedule_type": "fixed_daily",
+        "times_per_day": 2
+      },
+      "source_id": "ben-05"
+    },
+    "E-8884": {
+      "reference": {
+        "schedule_type": "taper"
+      },
+      "source_id": "atyp-03"
+    },
+    "E-8989": {
+      "reference": {
+        "schedule_type": "non_daily"
+      },
+      "source_id": "atyp-05"
+    },
+    "E-9211": {
+      "reference": {
+        "schedule_type": "other"
+      },
+      "source_id": "atyp-08"
+    },
+    "E-9229": {
+      "reference": {
+        "action": null,
+        "dose_unit": "mg",
+        "dose_value": "50",
+        "interval_hours": null,
+        "route": "oral",
+        "schedule_type": "fixed_daily",
+        "times_per_day": 3
+      },
+      "source_id": "ben-07"
+    },
+    "E-9375": {
+      "reference": {
+        "schedule_type": "non_daily"
+      },
+      "source_id": "mis-05"
+    },
+    "E-9441": {
+      "reference": {
+        "action": null,
+        "dose_unit": "mg",
+        "dose_value": "20",
+        "interval_hours": null,
+        "route": "oral",
+        "schedule_type": "fixed_daily",
+        "times_per_day": 2
+      },
+      "source_id": "fld-04"
+    },
+    "E-9820": {
+      "reference": {
+        "schedule_type": "taper"
+      },
+      "source_id": "mis-07"
+    }
+  },
+  "packet_hash": "a7dbf23df2dd81d2",
+  "protocol": "CA-CLIN-001",
+  "seed": 20261022
+}
