@@ -115,3 +115,41 @@ def test_malformed_provider_dose_degrades_one_instruction_not_the_analysis(monke
     assert len(result) == 1
     assert result[0].validation_status == ValidationStatus.INSUFFICIENT_INFORMATION
     assert result[0].dose is None
+
+
+def test_expired_api_key_is_reported_by_readiness(monkeypatch) -> None:
+    from app.services import extraction
+    from app.services.provider_guard import provider_auth
+
+    monkeypatch.setattr(settings, "demo_mode", False)
+    monkeypatch.setattr(settings, "anthropic_api_key", "synthetic-expired-key")
+
+    class Rejected:
+        def __init__(self, *args, **kwargs) -> None:
+            pass
+
+        async def __aenter__(self):
+            return self
+
+        async def __aexit__(self, *exc) -> None:
+            return None
+
+        async def post(self, *args, **kwargs):
+            request = httpx.Request("POST", "https://api.anthropic.com/v1/messages")
+            return httpx.Response(401, request=request, json={"error": "invalid x-api-key"})
+
+    monkeypatch.setattr(extraction.httpx, "AsyncClient", Rejected)
+    assert client.get("/api/readiness").json()["provider_auth"] == "unknown"
+    body = {
+        "documents": [
+            {"document_id": "a", "document_type": "n", "document_date": "2026-01-01",
+             "raw_text": "Take lisinopril 10 mg once a day."},
+            {"document_id": "b", "document_type": "n", "document_date": "2026-02-01",
+             "raw_text": "Take lisinopril 10 mg once a day."},
+        ]
+    }  # fmt: skip
+    assert client.post("/api/analyze", json=body).status_code == 503
+    assert provider_auth.snapshot() == "failed"
+    ready = client.get("/api/readiness")
+    assert ready.status_code == 503
+    assert ready.json()["provider_auth"] == "failed"

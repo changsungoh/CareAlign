@@ -12,6 +12,31 @@
    Health proves the process is alive; only readiness proves live extraction is configured and its
    provider circuit is closed.
 
+## Provider credential lifecycle
+
+The API key is the single point of failure for live analysis. An expired or revoked key makes every
+analysis fail with an "Analysis unavailable" response while `/api/health` keeps returning `200`.
+
+- Create the key without an expiry date, or with a long one, and record any expiry in a calendar
+  reminder at least two weeks ahead. Anthropic emails expiry notices, so keep that mailbox monitored.
+- `GET /api/readiness` reports `provider_auth`: `unknown` (no live call yet), `ok`, or `failed` when
+  the provider answered 401/403. A `failed` value also turns readiness into `503`. Point an external
+  uptime monitor at `/api/readiness` (not `/api/health`) and alert on any non-200 response. Keep the
+  Render health check on `/api/health` so a bad key does not cause restart loops.
+- To rotate: create the new key in the provider console, replace `ANTHROPIC_API_KEY` in the Render
+  environment (value only, no `ANTHROPIC_API_KEY=` prefix or quotes), deploy, run one live analysis,
+  confirm `provider_auth` is `ok`, then delete the old key. Never paste a key into chat, issues or logs.
+- Set a monthly spending limit in the provider console as a second line of defence behind
+  `DAILY_REQUEST_LIMIT` and `PER_CLIENT_DAILY_LIMIT`.
+
+## Request budgets and proxy configuration
+
+`DAILY_REQUEST_LIMIT` is a global ceiling on live analyses. `PER_CLIENT_DAILY_LIMIT` stops one client
+from consuming all of it, but a per-client cap is only fair when the client can be identified. It is
+therefore applied only when `TRUSTED_PROXY_HOPS` is greater than `0`, or when the socket peer is a
+public address. Behind Render, set `TRUSTED_PROXY_HOPS` to the verified number of proxies in front of
+the API; until then every user shares the proxy address and only the global ceiling applies.
+
 ## Frontend on Vercel
 
 1. Import the same repository with root directory `frontend`.
