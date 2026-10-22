@@ -16,6 +16,7 @@ def request(host: str = "198.51.100.7") -> Request:
 def clear_limits() -> None:
     rate_limit._requests.clear()
     rate_limit._daily.clear()
+    rate_limit._daily_by_client.clear()
 
 
 def test_minute_limit_blocks_only_after_configured_allowance(monkeypatch) -> None:
@@ -91,3 +92,32 @@ def test_idle_client_keys_are_dropped(monkeypatch) -> None:
     rate_limit._requests["198.51.100.1"].append(time.time() - 120)
     rate_limit.enforce_rate_limit(request("198.51.100.2"))
     assert "198.51.100.1" not in rate_limit._requests
+
+
+def test_one_client_cannot_exhaust_the_global_daily_budget(monkeypatch) -> None:
+    monkeypatch.setattr(settings, "demo_mode", False)
+    monkeypatch.setattr(settings, "rate_limit_per_minute", 100)
+    monkeypatch.setattr(settings, "daily_request_limit", 10)
+    monkeypatch.setattr(settings, "daily_per_client_limit", 2)
+    rate_limit.enforce_analysis_budget(request("198.51.100.7"))
+    rate_limit.enforce_analysis_budget(request("198.51.100.7"))
+    with pytest.raises(HTTPException) as error:
+        rate_limit.enforce_analysis_budget(request("198.51.100.7"))
+    assert error.value.status_code == 429
+    # A different client still has budget, and the blocked attempt consumed none.
+    assert len(rate_limit._daily) == 2
+    rate_limit.enforce_analysis_budget(request("203.0.113.9"))
+    assert len(rate_limit._daily) == 3
+
+
+def test_per_client_daily_entries_expire_and_idle_keys_are_dropped(monkeypatch) -> None:
+    monkeypatch.setattr(settings, "demo_mode", False)
+    monkeypatch.setattr(settings, "rate_limit_per_minute", 100)
+    monkeypatch.setattr(settings, "daily_request_limit", 10)
+    monkeypatch.setattr(settings, "daily_per_client_limit", 1)
+    old = time.time() - 90_000
+    rate_limit._daily_by_client["198.51.100.1"].append(old)
+    rate_limit._daily_by_client["198.51.100.2"].append(old)
+    rate_limit.enforce_analysis_budget(request("198.51.100.2"))  # its old entry has expired
+    assert "198.51.100.1" not in rate_limit._daily_by_client
+    assert len(rate_limit._daily_by_client["198.51.100.2"]) == 1

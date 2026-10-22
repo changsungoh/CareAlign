@@ -8,6 +8,7 @@ from app.core.config import settings
 
 _requests: dict[str, deque[float]] = defaultdict(deque)
 _daily: deque[float] = deque()
+_daily_by_client: dict[str, deque[float]] = defaultdict(deque)
 _lock = Lock()
 
 
@@ -47,9 +48,21 @@ def enforce_analysis_budget(request: Request) -> None:
     if settings.demo_mode:
         return
     now = time.time()
+    key = client_key(request)
     with _lock:
         while _daily and _daily[0] < now - 86400:
             _daily.popleft()
+        for stale in [
+            k for k, q in _daily_by_client.items() if k != key and (not q or q[-1] < now - 86400)
+        ]:
+            del _daily_by_client[stale]
+        mine = _daily_by_client[key]
+        while mine and mine[0] < now - 86400:
+            mine.popleft()
+        # Check the per-client share first so a blocked client does not consume global budget.
+        if len(mine) >= settings.daily_per_client_limit:
+            raise HTTPException(429, "Daily analysis limit for this client reached.")
         if len(_daily) >= settings.daily_request_limit:
             raise HTTPException(503, "Daily live-analysis budget reached.")
+        mine.append(now)
         _daily.append(now)

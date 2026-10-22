@@ -246,6 +246,9 @@ class ReadinessResponse(StrictModel):
     provider_circuit: str
     retry_after_seconds: float = Field(ge=0)
     release_sha: str
+    provider_auth: str = "unknown"
+    key_expires_in_days: int | None = None
+    warnings: list[str] = Field(default_factory=list)
 
 
 class VersionResponse(StrictModel):

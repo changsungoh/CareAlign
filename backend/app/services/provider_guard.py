@@ -60,6 +60,37 @@ class ProviderCircuitBreaker:
         self.record_success()
 
 
+class ProviderAuthState:
+    """Tracks whether the provider has recently rejected our credentials (HTTP 401/403).
+
+    A silently expired key otherwise looks like a generic outage. Exposing it through readiness
+    lets an external monitor alert on it.
+    """
+
+    def __init__(self) -> None:
+        self._state = "unknown"
+        self._lock = Lock()
+
+    def record_rejected(self) -> None:
+        with self._lock:
+            self._state = "failed"
+
+    def record_accepted(self) -> None:
+        with self._lock:
+            self._state = "ok"
+
+    @property
+    def state(self) -> str:
+        with self._lock:
+            return self._state
+
+    def reset(self) -> None:
+        with self._lock:
+            self._state = "unknown"
+
+
+provider_auth = ProviderAuthState()
+
 provider_circuit = ProviderCircuitBreaker(
     settings.provider_failure_threshold,
     settings.provider_recovery_seconds,

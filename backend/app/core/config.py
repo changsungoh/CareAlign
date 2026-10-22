@@ -24,6 +24,10 @@ class Settings(BaseSettings):
     anthropic_api_key: str = ""
     llm_model: str = "claude-haiku-4-5-20251001"
     daily_request_limit: int = 250
+    # Per-client share of the global daily live-analysis budget, so one caller cannot exhaust it.
+    daily_per_client_limit: int = 40
+    # Optional ISO date (YYYY-MM-DD, UTC) on which the provider API key expires.
+    anthropic_api_key_expires_on: str = ""
     confidence_threshold: float = 0.70
     rxnorm_enabled: bool = False
     rxnorm_base_url: str = "https://rxnav.nlm.nih.gov/REST"

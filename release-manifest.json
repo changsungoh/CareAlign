@@ -1,15 +1,15 @@
 {
   "app_version": "0.4.0",
   "artifacts": {
-    "backend/app/models/schemas.py": "682487aeb8a4e6ba34fc92d89e1e16c7b5a58d9ad03efe6a21e44af1b9f53cdc",
+    "backend/app/models/schemas.py": "8a735082e7780ee95660109efe3f91af86b696c88999b0a15cb700a7777f935b",
     "backend/app/rules/medication_aliases.json": "8cfa9315d05bfe660777788518744daeddc21fb0cdf4d6f01f0a97636aab5fba",
     "backend/app/rules/route_aliases.json": "c92a407c61f8a52cc3bca8ca6e02abf3d7487a02a6c124b6f35c5252b7e09dda",
     "backend/app/services/conflicts.py": "9462b22c67fa921f628435c38b32b6f9397988713bd8b7f4f6adf915e79319fa",
     "backend/app/services/evidence.py": "f80b2eae95def3e3b3ec8407c9b0d520f5b34a839e4ee88bc26dca7debf36c51",
-    "backend/app/services/extraction.py": "a5ed21144775c524583d5c6f49cdd2db3f93b8d1455b38a54c0fe5f943cdacae",
+    "backend/app/services/extraction.py": "f2c11e2cff4ed213cadcc7c26bfe66d679b3d1b8567b82d9c6e11c6c5b7e49b0",
     "backend/app/services/fhir.py": "ab43bc76f8e9a148cb9bf62efe5b83ea16e7a8c97d09e1a2a758c8743112ece3",
     "backend/app/services/normalization.py": "5cc8c5bb36c25f444147e2355d2ab44f3c8772e6c1c7fca0dfb0ed520830cfa4",
-    "backend/app/services/provider_guard.py": "058e9fd72c7e0b10ae745d847cef57f2f961ed56c5978211cd73f30687a4f8e5",
+    "backend/app/services/provider_guard.py": "fcd387761c98fb6579fea979a13468ef7a593baf37826d7dbad8f09729ae4d2f",
     "backend/app/services/rxnorm.py": "bf0340d57102a3d720a01a9de30a59bffcf5386f55d14a7d0660fdb9e86c629d",
     "backend/app/services/teachback.py": "9df9b990448049648be70c1e61df592d16bd62648bd3b307f6d0fca2aad087e3",
     "evaluation/cases/atypical-v1.jsonl": "5bd82ea38ec586397bc84440aceb690fea5a4aea90395cfbbff1039bcdc7b09f",

@@ -53,3 +53,15 @@ The configured model and structured-output API shape should be rechecked against
 [Claude model documentation](https://platform.claude.com/docs/en/models/overview) and
 [structured-output documentation](https://platform.claude.com/docs/en/build-with-claude/structured-outputs)
 before the live smoke test.
+
+## Provider key rotation
+
+1. Create a new key in the provider console with an expiry later than the evaluation period.
+2. Update `ANTHROPIC_API_KEY` on Render and set `ANTHROPIC_API_KEY_EXPIRES_ON` to the new expiry
+   date; Render redeploys the service.
+3. Confirm `GET /api/readiness` returns `ready`, `provider_auth` is `ok` after one analysis, and
+   `warnings` is empty.
+4. Delete the old key in the console.
+
+`/api/readiness` reports `degraded` (HTTP 503) when the provider rejects the key or the configured
+expiry has passed, and warns during the final 14 days. Monitor it externally.

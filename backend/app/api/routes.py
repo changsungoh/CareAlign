@@ -3,7 +3,7 @@ import hashlib
 import json
 import logging
 import time
-from datetime import UTC, datetime
+from datetime import UTC, date, datetime
 
 import httpx
 from fastapi import APIRouter, Depends, HTTPException, Request
@@ -28,11 +28,24 @@ from app.models.schemas import (
 from app.services.conflicts import detect_conflicts
 from app.services.extraction import extract_document
 from app.services.fhir import FHIRImportError, import_fhir_resource
-from app.services.provider_guard import CircuitOpenError, provider_circuit
+from app.services.provider_guard import CircuitOpenError, provider_auth, provider_circuit
 from app.services.rate_limit import enforce_analysis_budget, enforce_rate_limit
 from app.services.teachback import evaluate_teachback
 
 router = APIRouter()
+
+KEY_EXPIRY_WARNING_DAYS = 14
+
+
+def key_days_remaining() -> int | None:
+    """Days until the configured provider key expires (negative once expired); None if unset."""
+    raw = settings.anthropic_api_key_expires_on.strip()
+    if not raw or settings.demo_mode:
+        return None
+    try:
+        return (date.fromisoformat(raw) - datetime.now(UTC).date()).days
+    except ValueError:
+        return None
 
 
 @router.get("/health", response_model=HealthResponse)
@@ -47,13 +60,26 @@ def health() -> HealthResponse:
 )
 def readiness() -> ReadinessResponse | JSONResponse:
     snapshot = provider_circuit.snapshot()
-    ready = settings.provider_mode in {"live", "demo"} and snapshot.state == "closed"
+    days_left = key_days_remaining()
+    auth_state = provider_auth.state
+    warnings: list[str] = []
+    if auth_state == "failed":
+        warnings.append("The provider rejected the configured API key (HTTP 401/403).")
+    if days_left is not None and days_left < 0:
+        warnings.append("The provider API key has passed its configured expiry date.")
+    elif days_left is not None and days_left <= KEY_EXPIRY_WARNING_DAYS:
+        warnings.append(f"The provider API key expires in {days_left} day(s).")
+    key_ok = auth_state != "failed" and (days_left is None or days_left >= 0)
+    ready = settings.provider_mode in {"live", "demo"} and snapshot.state == "closed" and key_ok
     result = ReadinessResponse(
         status="ready" if ready else "degraded",
         provider_mode=settings.provider_mode,
         provider_circuit=snapshot.state,
         retry_after_seconds=snapshot.retry_after_seconds,
         release_sha=settings.deployment_revision,
+        provider_auth=auth_state,
+        key_expires_in_days=days_left,
+        warnings=warnings,
     )
     if not ready:
         return JSONResponse(status_code=503, content=result.model_dump(mode="json"))

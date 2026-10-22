@@ -127,7 +127,7 @@ Run the browser flow with `npm run test:e2e` after `npx playwright install chrom
 | Endpoint | Purpose |
 |---|---|
 | `GET /api/health` | Deployment health check |
-| `GET /api/readiness` | Provider configuration and circuit-breaker readiness |
+| `GET /api/readiness` | Provider configuration, circuit-breaker state, provider key health and expiry warnings (returns 503 when degraded) |
 | `GET /api/version` | Model/prompt/rules/dataset traceability |
 | `POST /api/fhir/import` | Validate and convert synthetic FHIR R4 medication resources into dated records |
 | `POST /api/analyze` | Extract and deterministically compare 2–5 ordered documents |
@@ -273,6 +273,13 @@ The repository, prompts, rules, synthetic fixtures and limitations are disclosed
 - Backend: [https://carealign-api.onrender.com](https://carealign-api.onrender.com)
 - Production uses `DEMO_MODE=false`, `DEBUG_LOG_RAW=false`, and the exact Vercel origin in CORS.
 - The Anthropic key is stored only as a Render secret and is never exposed to the frontend.
+- Live analysis is capped per client (`DAILY_PER_CLIENT_LIMIT`, default 40 per rolling day) in
+  addition to the global `DAILY_REQUEST_LIMIT`, so one caller cannot exhaust everyone's budget.
+- A provider key that expires or is revoked otherwise looks like a generic outage. Set
+  `ANTHROPIC_API_KEY_EXPIRES_ON` (UTC date) to get a warning in `/api/readiness` during the last 14
+  days; a rejected key (HTTP 401/403) or a passed expiry date turns readiness `degraded` (HTTP 503).
+  Point an external uptime monitor at `/api/readiness`, not only `/api/health`. Use an expiry
+  longer than the project's evaluation period when creating the key.
 - Rate limiting keys on the socket peer address by default. Behind a reverse proxy that is the
   proxy's address, so all users would share one allowance. Set `TRUSTED_PROXY_HOPS` to the number of
   trusted proxies in front of the API (for example `1`) to key on the matching `X-Forwarded-For`
@@ -286,6 +293,12 @@ python scripts/preflight.py \
   --frontend-url https://YOUR-FRONTEND.example \
   --backend-url https://YOUR-BACKEND.example
 ```
+
+## Dependency maintenance
+
+Dependabot opens weekly grouped update PRs for `frontend` (npm), `backend` (uv) and GitHub Actions,
+and a scheduled workflow runs `npm audit` every Monday, so a newly published advisory is noticed
+before it fails an unrelated pull request.
 
 ## License
 
