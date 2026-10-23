@@ -30,6 +30,7 @@ class ConflictType(StrEnum):
     FREQUENCY = "frequency_difference"
     ROUTE = "route_difference"
     TIMING = "timing_difference"
+    DURATION = "duration_difference"
     ACTION = "action_difference"
     OMISSION = "possible_omission"
     IDENTITY = "identity_uncertain"

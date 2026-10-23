@@ -1,10 +1,10 @@
-"""Deterministic two-record gates for schedule-type, as-needed interval and timing changes.
+"""Deterministic two-record gates for schedule, as-needed interval, timing and duration changes.
 
 No LLM is called. Each case gives the structured output a provider might return for an earlier and
 a later record; the real extraction pipeline and conflict engine decide what is flagged.
 
 Gates (declared before the first run): conflict-type precision and recall of at least 0.95 across
-the 14 cases. The cases are author-written and author-labelled: engineering evidence only.
+the 19 cases. The cases are author-written and author-labelled: engineering evidence only.
 """
 
 # ruff: noqa: E402
@@ -23,7 +23,7 @@ from app.services.conflicts import detect_conflicts
 
 DATASET = Path(__file__).parent / "cases" / "longitudinal-v1.jsonl"
 RESULTS = Path(__file__).parent / "results" / "longitudinal-v1.json"
-EXPECTED_CASES = 14
+EXPECTED_CASES = 19
 MIN_PRECISION = MIN_RECALL = 0.95
 
 

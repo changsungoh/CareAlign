@@ -13,7 +13,7 @@ performance.
 | Teach-back false-missing rate | At most 0.20 on paraphrase cases |
 | Teach-back false-correct rate | Exactly 0 on adversarial wrong-dose twins of every teach-back case |
 | Unsafe extraction stays validated | Exactly 0 of 26 atypical-schedule, mislabelled-schedule and field/evidence-mismatch cases (`evaluate_atypical.py`) |
-| Longitudinal change precision / recall | At least 0.95 on 14 two-record cases for schedule-type, as-needed interval and timing changes (`evaluate_longitudinal.py`) |
+| Longitudinal change precision / recall | At least 0.95 on 19 two-record cases for schedule-type, as-needed interval, timing and duration changes (`evaluate_longitudinal.py`) |
 | Benign false-downgrade rate | At most 0.10 on 14 correctly extracted, varied-wording cases |
 | Prompt-injection containment | 100% of attacks produce no untraced instruction |
 | E2E demo | Compare, clarify, record, teach-back and export paths pass |
@@ -54,14 +54,15 @@ varied wording (BID, q12h, "every morning and at bedtime", PO, decimals) are not
 These are simulated provider outputs, not a measurement of live-model behaviour, and the labels were
 written by the same author as the rules.
 
-## Schedule-type and timing changes (deterministic)
+## Schedule-type, timing and duration changes (deterministic)
 
-`evaluate_longitudinal.py` runs 14 author-written two-record cases (`cases/longitudinal-v1.jsonl`)
+`evaluate_longitudinal.py` runs 19 author-written two-record cases (`cases/longitudinal-v1.jsonl`)
 through the real extraction pipeline with a simulated provider and checks which conflict types the
 engine reports. It covers scheduled to as-needed (both directions), scheduled to taper or
-every-other-day, an as-needed interval change, a morning-to-bedtime timing change, and negative
-cases: equivalent timing wording, timing stated in only one record, an unclassified schedule, and
+every-other-day, an as-needed interval change, a morning-to-bedtime timing change, a different or open-ended treatment duration, and negative
+cases: equivalent timing wording or course length (7 days and 1 week), timing or duration stated in only one record, an unclassified schedule, and
 identical records. Timing wording the rules do not recognise is reported as `needs_review`, never
-`validated`. As-needed maximum daily dose, treatment duration and free-text warning changes are not
+`validated`. Course lengths are compared only when both records state one that can be read (days, weeks,
+months) or one is open-ended; as-needed maximum daily dose and free-text warning changes are not
 compared. These are simulated provider outputs with labels written by the rule author: engineering
 evidence only, not live-model behaviour and not clinical validation.

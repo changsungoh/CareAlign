@@ -104,7 +104,7 @@ Run the deterministic evaluation gates from the repository root (none of them ca
 ```bash
 uv run --project backend python evaluation/evaluate.py            # 90-case component regression
 uv run --project backend python evaluation/evaluate_atypical.py   # atypical-schedule robustness
-uv run --project backend python evaluation/evaluate_longitudinal.py # schedule-type / timing change detection
+uv run --project backend python evaluation/evaluate_longitudinal.py # schedule-type / timing / duration change detection
 uv run --project backend python evaluation/evaluate_rxnorm.py     # offline RxNorm contract
 uv run --project backend python scripts/release_manifest.py --verify
 ```

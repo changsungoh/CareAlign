@@ -1,3 +1,4 @@
+import re
 from collections import defaultdict
 from dataclasses import dataclass, field
 from decimal import Decimal
@@ -99,6 +100,54 @@ def _schedule_kinds(entries: list[Instruction]) -> set[str]:
         elif pattern != "unsupported":
             kinds.add(pattern)
     return kinds
+
+
+_NUMBER_WORDS = {
+    "a": 1, "an": 1, "one": 1, "two": 2, "three": 3, "four": 4, "five": 5, "six": 6,
+    "seven": 7, "eight": 8, "nine": 9, "ten": 10, "twelve": 12, "fourteen": 14,
+}  # fmt: skip
+_DAY_FACTORS = {"day": 1, "week": 7, "wk": 7, "month": 30}
+_DURATION_RE = re.compile(
+    r"(?<![\w.])(\d+(?:\.\d+)?|a|an|one|two|three|four|five|six|seven|eight|nine|ten|twelve"
+    r"|fourteen)\s*-?\s*(day|week|wk|month)s?\b"
+)
+# "once a week" or "every 2 days" describe how often, not how long.
+_FREQUENCY_PHRASE_RE = re.compile(
+    r"\b(?:once|twice|every|each|per)\s+(?:a\s+|an\s+)?(?:\d+\s*)?(?:day|week|wk|month)s?\b"
+)
+_OPEN_ENDED_RE = re.compile(
+    r"\b(ongoing|indefinite(?:ly)?|long[- ]term|life[- ]?long|until further notice|permanently)\b"
+)
+
+
+def _duration_profile(entries: list[Instruction]) -> tuple[list[int], bool, bool]:
+    """Return ``(course lengths in days, open-ended, uses months)`` stated in one document."""
+    lengths: set[int] = set()
+    open_ended = uses_months = False
+    for item in entries:
+        if not item.duration:
+            continue
+        text = " ".join(item.duration.casefold().split())
+        text = re.sub(r"\bx\s*(?=\d)", "", text)
+        if _OPEN_ENDED_RE.search(text):
+            open_ended = True
+        text = _FREQUENCY_PHRASE_RE.sub(" ", text)
+        for amount, unit in _DURATION_RE.findall(text):
+            value = float(amount) if amount.replace(".", "", 1).isdigit() else _NUMBER_WORDS[amount]
+            lengths.add(round(value * _DAY_FACTORS[unit]))
+            uses_months = uses_months or unit == "month"
+    return sorted(lengths), open_ended, uses_months
+
+
+def _same_course(left: list[int], right: list[int], tolerance: int) -> bool:
+    return len(left) == len(right) and all(
+        abs(a - b) <= tolerance for a, b in zip(left, right, strict=True)
+    )
+
+
+def _describe_duration(lengths: list[int], open_ended: bool) -> str:
+    parts = [f"{days} days" for days in lengths] + (["ongoing"] if open_ended else [])
+    return " + ".join(parts)
 
 
 def detect_conflicts(
@@ -282,6 +331,21 @@ def detect_conflicts(
                     f"{' + '.join(sorted(right_times))}",
                     0.9 if left_known and right_known else 0.6,
                 )
+
+            left_days, left_open, left_months = _duration_profile(left_entries)
+            right_days, right_open, right_months = _duration_profile(right_entries)
+            if (left_days or left_open) and (right_days or right_open):
+                # Month lengths vary (28-31 days), so allow a small gap only when months are used.
+                tolerance = 2 if left_months or right_months else 0
+                if left_open != right_open or not _same_course(left_days, right_days, tolerance):
+                    collect(
+                        medication_id,
+                        ConflictType.DURATION,
+                        both,
+                        f"{transition}: duration {_describe_duration(left_days, left_open)} → "
+                        f"{_describe_duration(right_days, right_open)}",
+                        0.9,
+                    )
 
             left_routes = {i.route.normalized for i in left_entries if i.route}
             right_routes = {i.route.normalized for i in right_entries if i.route}
