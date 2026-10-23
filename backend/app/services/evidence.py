@@ -184,3 +184,27 @@ def field_contradictions(
             if present and claimed not in present:
                 values.append(f"action '{claimed}' contradicts the quote (found {sorted(present)})")
     return schedule, values
+
+
+# ---------------------------------------------------------------------------
+# Language boundary.
+#
+# Every schedule/route/action safety net above reads English vocabulary. Wording in another
+# script cannot be checked by it, so a PRN, taper or every-other-day instruction that a provider
+# mislabelled as a fixed schedule would pass unnoticed. Until a language has its own reviewed
+# vocabulary and evaluation set, an instruction whose evidence is not Latin-script text is never
+# auto-validated.
+# ---------------------------------------------------------------------------
+
+# Greek letters that appear inside otherwise English dosing text: µg/μg and "β-blocker".
+_ALLOWED_NON_LATIN = frozenset("μαβ")
+
+
+def has_unsupported_script(text: str) -> bool:
+    """True when ``text`` contains letters outside the Latin script (Hangul, Cyrillic, ...)."""
+    for char in unicodedata.normalize("NFKC", text):
+        if not char.isalpha() or char in _ALLOWED_NON_LATIN:
+            continue
+        if not unicodedata.name(char, "").startswith("LATIN"):
+            return True
+    return False

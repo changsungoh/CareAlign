@@ -220,6 +220,11 @@ this process can reduce recall bias but is not independent external review.
   interval, route or action the quote visibly contradicts is sent to review. These are pattern
   checks, so ambiguous wording errs toward review rather than validation, and correctly extracted
   documents may occasionally be marked "insufficient information".
+- Input is English text. The schedule and consistency checks read English vocabulary, so an
+  instruction whose evidence is in another script (for example Korean) is never auto-validated: it
+  is returned for review and excluded from teach-back. This is a safety boundary, not language
+  support; see [`docs/INPUT_EXPANSION.md`](docs/INPUT_EXPANSION.md). PDF and image input are not
+  implemented.
 - The prototype is not configured or represented as HIPAA compliant.
 - Demo medication aliases are deliberately limited; similar ingredients with different salts or
   formulations are not collapsed. The FHIR importer is a local, read-only interoperability
