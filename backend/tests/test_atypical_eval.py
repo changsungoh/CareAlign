@@ -71,3 +71,14 @@ def test_live_evaluation_logic_with_a_faithful_fake_provider(monkeypatch, tmp_pa
     assert report["metrics"]["unsafe_texts_ending_validated"] == 0
     assert report["metrics"]["plain_false_downgrade_rate"] <= 0.10
     assert report["usage"]["input_tokens"] == 3500
+
+
+def test_longitudinal_change_gates_pass() -> None:
+    spec = importlib.util.spec_from_file_location(
+        "evaluate_longitudinal", EVALUATOR.parent / "evaluate_longitudinal.py"
+    )
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    report = asyncio.run(module.evaluate())
+    assert report["failures"] == [], report["failures"]
+    assert report["gates_passed"]
