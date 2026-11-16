@@ -28,7 +28,10 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 .brand { display: inline-flex; align-items: center; gap: 11px; color: var(--ink); font-size: 1.08rem; font-weight: 850; letter-spacing: -.03em; text-decoration: none; }
 .brand > span:last-child { display: grid; line-height: 1.05; }
 .brand small { margin-top: 5px; color: var(--muted); font-size: .66rem; font-weight: 650; letter-spacing: .02em; }
-.logo-mark { width: 34px; height: 34px; display: grid; place-items: center; flex: 0 0 auto; border-radius: 10px; background: var(--pink-dark); color: #fff; font-size: 1.45rem; font-weight: 400; line-height: 1; padding-bottom: .16em; box-shadow: 0 8px 20px rgba(216,27,125,.25); }
+.logo-mark { width: 34px; height: 34px; display: grid; place-items: center; flex: 0 0 auto; border-radius: 10px; background: var(--pink-dark); color: #fff; position: relative; font-size: 0; color: transparent; box-shadow: 0 8px 20px rgba(216,27,125,.25); }
+.logo-mark::before, .logo-mark::after { content: ""; position: absolute; left: 50%; top: 50%; border-radius: 2px; background: #fff; transform: translate(-50%,-50%); }
+.logo-mark::before { width: 42%; height: 8%; }
+.logo-mark::after { width: 8%; height: 42%; }
 .nav-actions, .section-heading, .result-actions, .conflict-top { display: flex; align-items: center; justify-content: space-between; gap: 14px; }
 .live-status { display: inline-flex; align-items: center; gap: 8px; color: var(--muted); font-size: .78rem; font-weight: 750; }
 .live-status i { width: 8px; height: 8px; border-radius: 50%; background: #22b573; box-shadow: 0 0 0 5px rgba(34,181,115,.11); }
@@ -195,7 +198,7 @@ blockquote { display: grid; gap: 7px; margin: 18px 0; padding: 15px 17px; border
 
 footer { width: min(1240px, calc(100% - 48px)); margin: 0 auto 34px; display: flex; align-items: center; justify-content: space-between; gap: 32px; padding: 24px 0; border-top: 1px solid var(--line); color: var(--muted); font-size: .72rem; line-height: 1.5; }
 .footer-brand { display: flex; align-items: center; gap: 11px; }
-.footer-brand .logo-mark { width: 30px; height: 30px; border-radius: 9px; font-size: 1.2rem; }
+.footer-brand .logo-mark { width: 30px; height: 30px; border-radius: 9px; }
 .footer-brand > div { display: grid; gap: 3px; }
 .footer-brand strong { color: var(--ink); font-size: .88rem; }
 .footer-brand span { font-size: .66rem; }
