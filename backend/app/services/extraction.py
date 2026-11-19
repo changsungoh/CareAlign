@@ -21,6 +21,7 @@ from app.models.schemas import (
 from app.services.evidence import (
     dose_supported_by_evidence,
     field_contradictions,
+    has_unsupported_script,
     verify_evidence,
 )
 from app.services.normalization import normalize_medication, normalize_route
@@ -290,6 +291,10 @@ async def extract_document(
         )
         if schedule_issues:
             status = ValidationStatus.INSUFFICIENT_INFORMATION
+        # The consistency checks above only understand English wording, so evidence in another
+        # script is never auto-validated (see has_unsupported_script).
+        if status == ValidationStatus.VALIDATED and has_unsupported_script(evidence):
+            status = ValidationStatus.NEEDS_REVIEW
         if status == ValidationStatus.VALIDATED and (
             value_issues
             or not dose_supported_by_evidence(evidence, item.get("dose"), item.get("unit"))
