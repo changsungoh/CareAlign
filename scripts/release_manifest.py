@@ -24,6 +24,8 @@ ARTIFACTS = (
     "evaluation/cases/synthetic-v1.jsonl",
     "evaluation/cases/atypical-v1.jsonl",
     "evaluation/evaluate_atypical.py",
+    "evaluation/cases/longitudinal-v1.jsonl",
+    "evaluation/evaluate_longitudinal.py",
     "evaluation/schema/case.schema.json",
     "evaluation/evaluate_rxnorm.py",
     "evaluation/rxnorm/cases-v1.json",
